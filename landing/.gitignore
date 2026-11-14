@@ -1,0 +1,4 @@
+.sites-local/
+.openai/
+*.tar.gz
+qa/
