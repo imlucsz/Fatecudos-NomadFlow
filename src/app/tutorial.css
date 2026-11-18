@@ -1,0 +1,36 @@
+.tutorial-spotlight { position: fixed; inset: 0; z-index: 1000; pointer-events: none; }
+.tutorial-curtain { position: absolute; inset: 0; pointer-events: none; }
+.tutorial-shadow { fill: #071521c9; pointer-events: fill; touch-action: none; }
+.tutorial-ring { fill: none; stroke: #a7d9ff; stroke-width: 2; pointer-events: none; filter: drop-shadow(0 0 5px #8bcdff); }
+.tutorial-card { --focus: #396f9a; color: #1c3a52; }
+.tutorial-balloon { position: absolute; display: flex; flex-direction: column; width: min(448px,calc(100% - 24px)); padding: clamp(18px,2.4vw,27px); border: 1px solid #c3d9eb; border-radius: 21px; background: #fff; box-shadow: 0 18px 55px #03121b50; pointer-events: auto; }
+.tutorial-balloon::before { content: ""; position: absolute; width: 13px; height: 13px; border: solid #c3d9eb; border-width: 1px 0 0 1px; background: #fff; pointer-events: none; }
+.tutorial-balloon[data-placement="center"]::before { display: none; }
+.tutorial-balloon[data-placement="below"]::before { top: -7px; left: calc(var(--tutorial-arrow) - 7px); transform: rotate(45deg); }
+.tutorial-balloon[data-placement="above"]::before { bottom: -7px; left: calc(var(--tutorial-arrow) - 7px); transform: rotate(225deg); }
+.tutorial-balloon[data-placement="right"]::before { left: -7px; top: calc(var(--tutorial-arrow) - 7px); transform: rotate(-45deg); }
+.tutorial-balloon[data-placement="left"]::before { right: -7px; top: calc(var(--tutorial-arrow) - 7px); transform: rotate(135deg); }
+.tutorial-heading { display: flex; align-items: center; flex-shrink: 0; gap: 9px; margin-bottom: 12px; }
+.tutorial-balloon .tutorial-body { min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+.tutorial-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0; color: #285477; background: #e5f0f8; }
+.tutorial-count { color: #496880; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tutorial-close { display: grid; place-items: center; width: 38px; height: 38px; margin-left: auto; padding: 0; background: #f0f5f9; border: 1px solid #dfeaf2; border-radius: 50%; color: #214969; }
+.tutorial-close:hover { background: #dcebf5; }
+.tutorial-balloon h2 { font-size: clamp(21px,2.4vw,29px); font-weight: 650; letter-spacing: -.04em; }
+.tutorial-card h2 + p { margin-top: 8px; font-size: clamp(13px,1.18vw,16px); line-height: 1.5; }
+.tutorial-actions { display: flex; flex-shrink: 0; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.tutorial-actions .button,.tutorial-map-action .button { background: #214969; }
+.tutorial-actions .button:hover,.tutorial-map-action .button:hover { background: #153752; }
+.tutorial-map-action { margin-top: 9px; }
+.tutorial-dialog-hint { padding: 13px 15px; border-radius: 13px; border: 1px solid #bdcfe0; background: #eef5fb; }
+.tutorial-dialog-hint .tutorial-heading { margin-bottom: 8px; }
+.tutorial-dialog-hint h2 { font-size: 18px; font-weight: 650; }
+.tutorial-dialog-hint h2 + p { font-size: 13px; }
+@media (max-height: 450px) {
+  .tutorial-balloon { padding: 8px 13px; }
+  .tutorial-balloon .tutorial-heading { margin-bottom: 4px; }
+  .tutorial-balloon .tutorial-icon { width: 26px; height: 26px; }
+  .tutorial-balloon .tutorial-close { width: 28px; height: 28px; }
+  .tutorial-balloon .tutorial-actions { margin-top: 4px; }
+  .tutorial-balloon .tutorial-actions .button { min-height: 28px; padding-block: 4px; }
+}

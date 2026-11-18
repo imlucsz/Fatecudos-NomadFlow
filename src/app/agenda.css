@@ -1,0 +1,65 @@
+.trip-agenda { display: grid; gap: 15px; min-width: 0; color: #183950; scroll-margin-top: 12px; }
+.trip-agenda-heading,.trip-agenda-actions,.trip-month-toolbar,.trip-month-nav { display: flex; align-items: center; gap: 8px; }
+.trip-agenda-heading,.trip-month-toolbar { justify-content: space-between; flex-wrap: wrap; }
+.trip-agenda-heading h2 { display: flex; align-items: center; gap: 9px; font-size: clamp(20px,2.5vw,27px); letter-spacing: -.03em; }
+.trip-agenda-actions { flex-wrap: wrap; }
+.trip-agenda-actions .button,.trip-agenda-day > header .button { border-color: #d5e2ed; color: #214663; }
+.trip-agenda-actions .button:hover,.trip-agenda-day > header .button:hover { background: #eaf2fa; }
+.trip-agenda-connected { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; border: 1px solid #d2e1ec; border-radius: var(--pill); background: #eef5fa; padding: 6px 11px; font-size: 12px; font-weight: 650; }
+.trip-agenda-connected > span { width: 7px; height: 7px; border-radius: 50%; background: #277551; }
+.trip-agenda-workspace { display: grid; grid-template-columns: minmax(0,1fr) minmax(296px,29%); align-items: start; gap: 15px; }
+.trip-month,.trip-agenda-day { min-width: 0; overflow: hidden; background: #fff; border-color: #dae5ee; }
+.trip-month-toolbar { padding: 13px 15px; background: #f7faff; border-bottom: 1px solid #e1eaf2; }
+.trip-month-nav h3 { margin-left: 5px; font-size: clamp(17px,2.1vw,24px); letter-spacing: -.025em; }
+.trip-month-nav h3::first-letter,.trip-agenda-day > header h3::first-letter { text-transform: uppercase; }
+.trip-month-toolbar .icon-button { border-color: #dbe6ef; color: #295675; background: #fff; }
+.trip-month-toolbar .icon-button:hover { background: #eaf3fa; }
+.trip-weekdays,.trip-month-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); }
+.trip-weekdays { color: #4c6580; background: #f9fbfe; border-bottom: 1px solid #e2eaf2; }
+.trip-weekdays span { text-align: center; font-size: 11px; font-weight: 700; padding: 8px 2px; }
+.trip-month-day { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; min-height: clamp(70px,8.6vw,101px); padding: 5px; text-align: left; border: 0; border-right: 1px solid #e5edf4; border-bottom: 1px solid #e5edf4; background: #fff; }
+.trip-month-day:nth-child(7n) { border-right: 0; }
+.trip-month-day[data-adjacent="true"] { background: #f7f9fc; color: #597189; }
+.trip-month-day:hover { background: #f0f6fb; }
+.trip-month-day[aria-pressed="true"] { position: relative; z-index: 1; box-shadow: inset 0 0 0 2px #477eab; background: #ecf5fc; }
+.trip-month-day:focus-visible { position: relative; z-index: 2; outline-offset: -3px; }
+.trip-day-number { display: grid; place-items: center; min-width: 23px; height: 23px; font-size: 12px; font-weight: 690; }
+.trip-month-day[aria-current="date"] .trip-day-number { background: #245c84; border-radius: 50%; color: #fff; }
+.trip-day-chips { display: grid; gap: 3px; width: 100%; min-width: 0; }
+.trip-agenda [data-category="travel"] { --event-text: #1c5688; --event-bg: #dcecfb; --event-dot: #2b78b3; }
+.trip-agenda [data-category="stay"] { --event-text: #64427c; --event-bg: #f0e7f8; --event-dot: #8964ad; }
+.trip-agenda [data-category="reminder"] { --event-text: #714715; --event-bg: #f9eed8; --event-dot: #ba7b24; }
+.trip-agenda [data-category="google"] { --event-text: #145c50; --event-bg: #dcefe9; --event-dot: #2a886f; }
+.trip-day-chip { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; border-left: 2px solid var(--event-dot); border-radius: 3px; padding: 2px 4px; font-size: 10px; font-weight: 650; color: var(--event-text); background: var(--event-bg); }
+.trip-day-overflow { font-size: 10px; padding-left: 4px; color: #4c6580; }
+.trip-calendar-filters { display: flex; flex-wrap: wrap; gap: 5px; padding: 10px 12px; }
+.trip-calendar-filters button { display: inline-flex; align-items: center; gap: 5px; border: 1px solid transparent; border-radius: var(--pill); background: transparent; color: #416079; padding: 4px 7px; font-size: 11px; font-weight: 650; }
+.trip-calendar-filters button[data-category]::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--event-dot); }
+.trip-calendar-filters button:hover,.trip-calendar-filters button[aria-pressed="true"] { background: #eff5fa; border-color: #d6e4ef; color: #214361; }
+.trip-agenda-sync { margin: 0 13px 10px; color: #45657e; font-size: 12px; }
+.trip-agenda-day > header { display: grid; gap: 9px; padding: 14px; border-bottom: 1px solid #e1eaf2; background: #f7faff; }
+.trip-agenda-day > header h3 { font-size: 17px; line-height: 1.3; }
+.trip-agenda-entries { display: grid; gap: 7px; padding: 9px; }
+.trip-agenda-empty { margin: 7px; color: #49657b; font-size: 13px; }
+.trip-agenda-entry { display: grid; grid-template-columns: 31px minmax(0,1fr); align-items: start; gap: 8px; padding: 9px; border: 1px solid #e4edf4; border-radius: 9px; }
+.trip-agenda-entry[data-focused="true"] { border-color: #72a3c8; background: #f5faff; }
+.trip-entry-icon { width: 31px; height: 31px; display: grid; place-items: center; background: var(--event-bg); color: var(--event-text); border-radius: 8px; }
+.trip-entry-content { display: grid; gap: 4px; min-width: 0; }
+.trip-entry-content > strong { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
+.trip-entry-content > span { display: block; font-size: 11px; color: #415f78; line-height: 1.4; overflow-wrap: anywhere; }
+.trip-entry-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 9px; }
+.trip-entry-actions .text-link { min-height: 25px; font-size: 11px; color: #265879; }
+
+@media (max-width: 940px) {
+  .trip-agenda-workspace { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 620px) {
+  .trip-agenda,.trip-agenda-workspace { gap: 10px; }
+  .trip-month-toolbar { padding: 8px; }
+  .trip-month-nav { gap: 4px; }
+  .trip-month-toolbar .icon-button { width: 30px; height: 30px; }
+  .trip-month-day { min-height: 45px; align-items: center; padding: 3px 1px; gap: 2px; }
+  .trip-day-chips { display: flex; justify-content: center; align-items: center; gap: 3px; }
+  .trip-day-chip { width: 5px; height: 5px; border: 0; border-radius: 50%; padding: 0; font-size: 0; background: var(--event-dot); }
+  .trip-day-overflow { padding-left: 0; font-size: 9px; }
+}

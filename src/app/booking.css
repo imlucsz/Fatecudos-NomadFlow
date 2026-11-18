@@ -1,0 +1,249 @@
+.app-main .ticket-jump { color: #284862; background: #e9f1f7; border-color: #cbdce9; }
+.app-main .ticket-jump:hover { background: #dae8f3; }
+.route-booking-layout { display: grid; grid-template-columns: clamp(229px,32%,370px) minmax(0,1fr); gap: 12px; align-items: start; min-width: 0; }
+.route-bookings { display: grid; gap: 9px; min-width: 0; }
+.route-booking-preview { min-width: 0; padding: 9px 11px; border-color: #d4e3ef; border-radius: 13px; color: #23455f; }
+.route-booking-heading { display: flex; align-items: center; gap: 9px; }
+.route-booking-icon { width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 9px; background: #e5eff7; }
+.route-booking-heading h3 { font-size: 14px; color: #23455f; }
+.route-booking-heading p { margin-top: 4px; color: #4b6273; font-size: 11px; }
+.route-preview-list { list-style: none; margin: 6px 0 2px; padding: 0; }
+.route-preview-list > li { border-top: 1px solid #e5edf3; }
+.route-preview-row { width: 100%; display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 6px; min-height: 25px; padding: 3px 2px; font-size: 11px; text-align: left; }
+button.route-preview-row { border: 0; border-radius: 5px; background: transparent; color: inherit; }
+button.route-preview-row:hover { background: #edf4fa; }
+.route-preview-row strong { overflow-wrap: anywhere; line-height: 1.3; font-weight: 640; }
+.route-preview-row time,.route-preview-row small { border-radius: 5px; background: #eaf2f8; padding: 2px 4px; color: #35556e; font-size: 10px; white-space: nowrap; }
+.route-booking-more { min-height: 26px; font-size: 12px; }
+.route-booking-list { grid-column: 1 / -1; display: grid; gap: 8px; min-width: 0; scroll-margin-top: var(--app-scroll-inset,94px); }
+.route-booking-close { justify-self: end; }
+.route-booking-list .route-tickets { margin-block: 0; }
+.route-stays { border-color: #d4e3ef; overflow: hidden; }
+.route-stays h2 { margin: 13px 15px 6px; font-size: clamp(21px,2.4vw,28px); }
+.route-stays ol { list-style: none; margin: 0; padding: 5px; }
+.route-stays li + li { border-top: 1px solid #e5edf3; }
+.route-stay-item { display: flex; align-items: center; flex-wrap: wrap; gap: 0 8px; }
+.route-stay {
+  flex: 1 1 460px;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr) auto auto;
+  gap: 7px 12px;
+  align-items: center;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 9px;
+  color: #23455f;
+  background: transparent;
+  text-align: left;
+}
+.route-stay:hover,.route-stay:focus-visible { background: #eef5fb; }
+.route-stay:focus-visible { outline-offset: -2px; }
+.route-stay-name { overflow-wrap: anywhere; }
+.route-stay-name strong,.route-stay-name small { display: block; }
+.route-stay-name strong { font-size: 14px; }
+.route-stay-name small,.route-stay-dates { color: #4b6273; font-size: 12px; }
+.route-stay-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 5px 8px; min-width: 0; padding: 5px 10px 9px; }
+.route-stay-actions .button { max-width: 100%; }
+.route-tickets { scroll-margin-top: var(--app-scroll-inset,94px); padding: clamp(12px,2.2vw,23px); min-width: 0; margin-block: 14px; overflow: clip; }
+.tickets-head { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 11px; align-items: center; }
+.tickets-icon,.stay-keycard-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 11px; color: #254c69; background: #e1edf6; }
+.tickets-head h2 { font-size: clamp(21px,2.4vw,31px); }
+.tickets-head p,.tickets-note,.ticket-meta,.ticket-mode span,.ticket-fare small,.tickets-total small,.tickets-total span { color: #4b6273; font-size: 12px; }
+.tickets-total { display: grid; gap: 2px; text-align: right; }
+.tickets-total strong { font-size: clamp(18px,2vw,27px); line-height: 1.15; }
+.tickets-note { margin: 10px 0 14px; }
+.tickets-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.ticket-row {
+  --ticket-line: #d3e1ed;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 148px;
+  border: 1px solid var(--ticket-line);
+  border-radius: 14px;
+  background: #f7fafc;
+  color: #1b3449;
+}
+.ticket-paper {
+  min-width: 0;
+  padding: 15px 18px 15px 13px;
+  display: grid;
+  grid-template-columns: auto minmax(0,1.5fr) minmax(0,.68fr) minmax(0,.75fr) minmax(0,1fr);
+  gap: 12px;
+  align-items: center;
+}
+.ticket-number { min-width: 31px; height: 31px; display: grid; place-items: center; border: 1px solid var(--ticket-line); border-radius: 8px; color: #375971; font-size: 12px; font-variant-numeric: tabular-nums; background: #eaf2f8; }
+.ticket-route h3,.ticket-meta,.ticket-mode strong,.ticket-mode span,.ticket-links .text-link { display: flex; align-items: center; gap: 5px; }
+.ticket-route h3 { flex-wrap: wrap; font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; }
+.ticket-meta { flex-wrap: wrap; margin-top: 4px; }
+.ticket-mode,.ticket-fare,.ticket-links { display: grid; gap: 4px; justify-items: start; }
+.ticket-mode strong,.ticket-fare strong { font-size: 14px; }
+.ticket-links { justify-items: end; }
+.ticket-links .button { max-width: 100%; }
+.ticket-link-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 5px; min-width: 0; }
+.booking-detail-button { width: 30px; height: 30px; color: #315774; background: #f5f9fc; border-color: #d1e1ed; }
+.booking-detail-button:hover { background: #e5eff7; }
+.route-tickets .ticket-links .text-link { color: #315774; font-size: 11px; text-align: right; }
+.ticket-edge {
+  position: relative;
+  min-width: 0;
+  min-height: 62px;
+  display: grid;
+  place-items: center;
+  padding: 9px;
+  border-left: 1px dashed #8daac0;
+  border-radius: 0 13px 13px 0;
+  color: #eef6fc;
+  background: linear-gradient(135deg,#264c6b,#17334b);
+  --focus: #c1e4ff;
+}
+.ticket-edge::before,.ticket-edge::after {
+  content: "";
+  position: absolute;
+  left: -7px;
+  width: 14px;
+  height: 14px;
+  z-index: 1;
+  border: 1px solid var(--ticket-line);
+  border-radius: 50%;
+  background: var(--paper);
+  pointer-events: none;
+}
+.ticket-edge::before { top: -7px; clip-path: inset(50% 0 0); }
+.ticket-edge::after { bottom: -7px; clip-path: inset(0 0 50%); }
+.ticket-edge:has([data-confirmed="true"]) { background: #e9f1f7; --focus: #315774; }
+.ticket-preview-stub { opacity: .78; }
+.booking-confirmation { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 5px 9px; min-width: 0; }
+.ticket-confirmation { width: 100%; justify-content: center; }
+.ticket-tear {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px 6px;
+  border: 1px solid #d7edff38;
+  border-radius: 9px;
+  color: #fff;
+  background: #ffffff13;
+  text-align: left;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transform: translateY(var(--stub-drop,0px)) rotate(var(--stub-turn,0deg));
+  transform-origin: left bottom;
+  transition: transform 210ms cubic-bezier(.2,0,0,1),background var(--ease);
+}
+.ticket-tear > span { display: grid; gap: 2px; }
+.ticket-tear strong { font-size: 13px; }
+.ticket-tear small { color: #d5e4f0; font-size: 11px; }
+.ticket-tear:hover,.ticket-tear[data-dragging] { background: #ffffff24; }
+.ticket-tear[data-dragging] { position: relative; z-index: 2; cursor: grabbing; transition: none; }
+.booking-stamp { display: inline-flex; align-items: center; gap: 5px; border-radius: 9px; padding: 6px 7px; background: #e2f3ed; color: #1c594a; font-size: 12px; font-weight: 680; }
+.booking-confirmation .booking-undo { min-height: 30px; align-items: center; font-size: 11px; }
+.ticket-confirmation .booking-undo { color: #315774; }
+.booking-error { flex-basis: 100%; color: #8d2e32; font-size: 11px; line-height: 1.35; }
+.ticket-confirmation[data-confirmed="false"] .booking-error { color: #ffe4e4; }
+.ticket-detached {
+  position: absolute;
+  inset: 5px 2px auto;
+  z-index: 2;
+  min-height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #c1ddf2;
+  border-left-style: dashed;
+  border-radius: 9px;
+  color: #fff;
+  background: #39678a;
+  transform-origin: left bottom;
+  pointer-events: none;
+  animation: ticket-detach 420ms cubic-bezier(.4,0,.88,.58) both;
+}
+@keyframes ticket-detach {
+  from { opacity: 1; transform: translateY(10px) rotate(11deg); }
+  to { opacity: 0; transform: translateY(64px) rotate(28deg) scale(.82); }
+}
+.stay-keycard {
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr);
+  gap: 9px 10px;
+  align-items: center;
+  padding: 11px;
+  border: 1px solid #d4e3ef;
+  border-radius: 12px;
+  color: #1c3b54;
+  background: radial-gradient(ellipse at top right,#dbeaf5,transparent 64%),#f1f7fb;
+}
+.stay-keycard-info { min-width: 0; display: grid; gap: 2px; overflow-wrap: anywhere; }
+.stay-keycard-info small { color: #456279; font-size: 11px; }
+.stay-keycard-info strong { font-size: 14px; }
+.stay-keycard-actions { grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; gap: 5px 7px; }
+.stay-keycard-actions .button { max-width: 100%; }
+.stay-confirmation .stay-confirm-button { background: #244b6a; }
+.stay-confirmation .stay-confirm-button:hover { background: #193851; }
+.stay-confirmation .booking-undo { color: #315774; }
+
+.calendar-settings {
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr);
+  gap: 10px;
+  align-items: start;
+  border: 1px solid #d4e3ef;
+  border-radius: 14px;
+  padding: 14px;
+  color: #1c3b54;
+  background: #f3f8fc;
+}
+.calendar-settings > * { grid-column: 1 / -1; }
+.calendar-settings .calendar-settings-heading { grid-column: 2; }
+.calendar-settings-icon { grid-column: 1; grid-row: 1; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: #e1edf6; }
+.calendar-settings h2 { margin-bottom: 4px; font-size: 19px; }
+.calendar-settings p { font-size: 13px; line-height: 1.45; }
+.calendar-settings-status { width: fit-content; padding: 4px 8px; border-radius: 7px; color: #335571; background: #e1edf6; font-size: 12px; }
+.calendar-settings .button { background: #244b6a; }
+.calendar-settings .button:hover { background: #193851; }
+.calendar-settings .text-link { font-size: 12px; }
+.departure-calendar { display: grid; min-width: 0; gap: 4px; font-size: 11px; text-align: start; }
+.calendar-link { display: inline-flex; align-items: center; gap: 5px; min-width: 0; font-size: 12px; color: #315774; }
+.booking-confirmation .calendar-link { max-width: 100%; min-height: 24px; text-align: start; }
+
+@media (max-width: 1080px) {
+  .ticket-paper { grid-template-columns: auto minmax(0,1fr) minmax(0,1fr); gap: 7px 10px; }
+  .ticket-route { grid-column: 2 / -1; }
+  .ticket-mode { grid-column: 2; }
+  .ticket-fare { justify-items: end; text-align: right; }
+  .ticket-links { grid-column: 2 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 9px; }
+  .ticket-link-actions { justify-content: flex-start; }
+}
+@media (max-width: 760px) {
+  .route-tickets { scroll-margin-top: 12px; }
+  .ticket-row { grid-template-columns: minmax(0,1fr); }
+  .ticket-paper { padding: 12px 14px; }
+  .ticket-edge { padding: 7px 12px; min-height: 54px; border-left: 0; border-top: 1px dashed #8daac0; border-radius: 0 0 13px 13px; }
+  .ticket-edge::before,.ticket-edge::after { top: -7px; bottom: auto; }
+  .ticket-edge::before { left: -7px; clip-path: inset(0 0 0 50%); }
+  .ticket-edge::after { left: auto; right: -7px; clip-path: inset(0 50% 0 0); }
+  .ticket-tear { min-height: 43px; }
+  .ticket-detached { inset-inline: 14%; }
+}
+@media (max-width: 430px) {
+  .tickets-head { grid-template-columns: auto minmax(0,1fr); }
+  .tickets-total { grid-column: 2; text-align: left; }
+}
+@media (max-width: 560px) {
+  .route-stay { grid-template-columns: auto minmax(0,1fr) auto; }
+  .route-stay-dates { grid-column: 2; }
+  .route-stay > svg { grid-column: 3; grid-row: 1 / 3; }
+}
+@media (max-width: 760px) {
+  .route-booking-layout { grid-template-columns: minmax(0,1fr); }
+  button.route-preview-row,.route-booking-more { min-height: 36px; }
+}
+@media (min-width: 921px) and (max-width: 1140px) {
+  .planner-workspace[data-expanded="true"] .route-booking-layout { grid-template-columns: minmax(0,1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticket-tear { transform: none; }
+}
