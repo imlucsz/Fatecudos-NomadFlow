@@ -1,3 +1,9 @@
 # Master plan — estado real
 
-Managed Devin indisponível (`auth status`: Not logged in). Subagentes locais reais usados: `a15f130e` técnico (ainda em execução), `0483def1` UX (concluído), `94afb3e4` segurança (concluído), `5e80c597` referências (concluído). Onda 1 parcialmente concluída; correções neutras iniciadas. Redesign integral, mascote final e motion avançado aguardam aprovação.
+Documento histórico de coordenação da frente Experience 2.0. A divisão atual é:
+
+- engenharia principal: correções técnicas, contratos, testes e release readiness;
+- direção visual/artística: agente especializado separado;
+- pitch audiovisual: escopo isolado em `video/`, com regras próprias.
+
+Não usar este arquivo como fonte de implementação visual. Para estado de release, usar `RELEASE_READINESS.md`; para contratos implementados, usar `FRONTEND_CONTRACTS.md`.
