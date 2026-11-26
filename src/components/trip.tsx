@@ -13,6 +13,7 @@ import { Budget } from "./compare";
 import { Itinerary } from "./itinerary";
 import { Agenda } from "./trip-agenda";
 import { Empty, Modal } from "./ui";
+import { ReservationReview } from "./reservation-review";
 
 function ShareDialog({trip,model,onClose}: {trip:Trip;model?:Template;onClose:() => void}) {
   const {owner,hidePublishedRoutes,published} = useLocal();
@@ -76,6 +77,7 @@ function Travel({trip,section,model,reservation}: {trip:Trip;section?:string;mod
       {hidePublishedRoutes && !model ? <Link className="button button-outline" href={accountSettingsPath+"#privacidade"}><Share2 size={16}/> Privacidade das rotas</Link>
         : <button className="button button-outline" onClick={()=>setSharing(true)}><Share2 size={16}/> {model ? "Gerenciar modelo" : "Publicar como modelo"}</button>}
     </div></div>
+    <ReservationReview trip={trip}/>
     <JourneyProgress trip={trip} model={publicModel}/>
     <nav className="trip-tabs" aria-label="Áreas da viagem">{tabs.map(({path,label,icon:Icon})=><Link key={label} href={base+path} aria-current={path===(section ? "/"+section : "") ? "page" : undefined}><Icon size={17}/> {label}</Link>)}</nav>
     {section==="agenda" ? <Agenda key={reservation} trip={trip} reservation={reservation}/> :

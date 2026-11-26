@@ -8,9 +8,10 @@ import { planningTutorial, type TutorialProgress, type TutorialStep } from "./tu
 type Profile = { id: string; name: string; email: string; avatar?: string };
 type Workspace = { trips: Trip[]; plan?: Plan; tutorial?: TutorialProgress; hidePublishedRoutes?:boolean; savedRoutes?:string[]; manualMapSeen?:boolean };
 type RouteActivity = {stars:string[];uses:string[]};
-type State = { active: Profile | null; profiles: Profile[]; workspaces: Record<string, Workspace>; published: Template[]; routeActivity?:Record<string,RouteActivity>; passwords?:Record<string,LocalPassword> };
+type State = { active: Profile | null; profiles: Profile[]; workspaces: Record<string, Workspace>; published: Template[]; routeActivity?:Record<string,RouteActivity>; passwords?:Record<string,LocalPassword>; passwordless?:string[]; schemaVersion:number; revision:number; updatedAt:string };
 const key = "nomadflow-local-v1";
-const empty: State = { active:null,profiles:[],workspaces:{},published:[] };
+const schemaVersion=2;
+const empty: State = { active:null,profiles:[],workspaces:{},published:[],passwordless:[],schemaVersion,revision:0,updatedAt:"" };
 const emptyWorkspace: Workspace = { trips:[] };
 const emptyActivity:RouteActivity = {stars:[],uses:[]};
 const emptySaved:string[] = [];
@@ -19,11 +20,33 @@ let loaded = false;
 let restoring = false;
 let restored = false;
 let persistence = Promise.resolve(true);
+let persistenceIssue:string|undefined;
 const listeners = new Set<() => void>();
+
+function setPersistenceIssue(issue:string|undefined) {
+  if (persistenceIssue===issue) return;
+  persistenceIssue=issue;
+  for (const notify of listeners) notify();
+}
+
+function migrateState(value: unknown): State {
+  if (value==null) return empty;
+  const input=(value && typeof value==="object" ? value : {}) as Partial<State>;
+  const profiles=Array.isArray(input.profiles) ? input.profiles : [];
+  const passwords=input.passwords && typeof input.passwords==="object" ? input.passwords : {};
+  const passwordless=input.passwordless ?? profiles.filter((profile)=>!passwords[profile.id]).map((profile)=>profile.id);
+  return {...empty,...input,profiles,workspaces:input.workspaces ?? {},published:Array.isArray(input.published) ? input.published : [],passwords,passwordless,schemaVersion,revision:Number.isSafeInteger(input.revision) ? input.revision! : 0,updatedAt:typeof input.updatedAt==="string" ? input.updatedAt : ""};
+}
+
+async function verifyProfileAccess(state:State,id:string,password:string) {
+  const credential=state.passwords?.[id];
+  if (credential) return matchesLocalPassword(password,credential);
+  return state.passwordless?.includes(id) ?? false;
+}
 
 function snapshot() {
   if (!loaded && typeof window !== "undefined") {
-    try { state = JSON.parse(localStorage.getItem(key) ?? "null") ?? empty; } catch {}
+    try { state = migrateState(JSON.parse(localStorage.getItem(key) ?? "null")); } catch {}
     loaded = true;
   }
   return state;
@@ -32,15 +55,29 @@ function subscribe(listener: () => void) {
   listeners.add(listener);
   function onStorage(event: StorageEvent) {
     if (event.key !== key && event.key !== null) return;
-    loaded = false;
+    try {
+      const incoming=migrateState(JSON.parse(event.newValue ?? "null"));
+      if (incoming!==empty && incoming.revision>state.revision) {
+        state=incoming;
+        loaded=true;
+      } else if (incoming!==empty && incoming.revision===state.revision && incoming.updatedAt!==state.updatedAt) {
+        setPersistenceIssue("Outra aba alterou este perfil ao mesmo tempo. Recarregue antes de continuar para evitar sobrescrever dados.");
+      } else if (event.newValue==null) {
+        loaded=false;
+      }
+    } catch {
+      loaded=false;
+    }
     listener();
   }
   window.addEventListener("storage",onStorage);
   return () => { listeners.delete(listener); window.removeEventListener("storage",onStorage); };
 }
 function update(transform: (current: State) => State) {
-  const next=transform(snapshot());
-  if (next===state) return;
+  const current=snapshot();
+  const transformed=transform(current);
+  if (transformed===current) return;
+  const next={...transformed,schemaVersion,revision:current.revision+1,updatedAt:new Date().toISOString()};
   state=next;
   persist(next);
   for (const notify of listeners) notify();
@@ -49,23 +86,39 @@ function update(transform: (current: State) => State) {
 function persist(next:State) {
   let cached=false;
   try { localStorage.setItem(key,JSON.stringify(next));cached=true; } catch {}
-  persistence=persistence.then(()=>writeWorkspace(next)).then(()=>true,()=>cached);
+  persistence=persistence.then(async()=>{
+    let databaseSaved=false;
+    try { await writeWorkspace(next);databaseSaved=true; } catch {}
+    if (databaseSaved) {
+      setPersistenceIssue(undefined);
+      return true;
+    }
+    if (cached) {
+      setPersistenceIssue("As alterações foram salvas apenas no cache local deste navegador. O backup interno está indisponível.");
+      return true;
+    }
+    setPersistenceIssue("O navegador não conseguiu salvar as últimas alterações. Evite fechar esta aba antes de resolver o armazenamento.");
+    return false;
+  });
 }
 
 async function restore() {
   if (restoring) return;
   restoring=true;
-  const initial=snapshot();
-  if (initial!==empty) persist(initial);
-  else {
+  try {
+    const initial=snapshot();
     const saved=await readWorkspace<State>().catch(()=>undefined);
     if (saved && snapshot()===initial) {
-      state=saved;
-      try { localStorage.setItem(key,JSON.stringify(saved)); } catch {}
-    }
+      const databaseState=migrateState(saved);
+      if (initial===empty || databaseState.revision>initial.revision) {
+        state=databaseState;
+        try { localStorage.setItem(key,JSON.stringify(state)); } catch {}
+      } else if (initial!==empty) persist(initial);
+    } else if (initial!==empty) persist(initial);
+  } finally {
+    restored=true;
+    for (const notify of listeners) notify();
   }
-  restored=true;
-  for (const notify of listeners) notify();
 }
 
 export const waitForWorkspaceSave=()=>persistence;
@@ -173,7 +226,7 @@ export async function login(name: string, email: string, create: boolean, passwo
   if (!create) {
     if (!existing) return "Este perfil ainda não existe neste navegador. Crie uma conta de demonstração.";
     const credential=current.passwords?.[existing.id];
-    if (!await matchesLocalPassword(password,credential)) return "Confira a senha e tente novamente.";
+    if (!await verifyProfileAccess(current,existing.id,password)) return credential ? "Confira a senha e tente novamente." : "A proteção local deste perfil não pôde ser verificada. Restaure um backup ou crie outro perfil de demonstração.";
     let signedIn=false;
     update((latest)=>{
       const profile=latest.profiles.find((row)=>row.id===existing.id && normalizeEmail(row.email)===normalizedEmail);
@@ -195,6 +248,7 @@ export async function login(name: string, email: string, create: boolean, passwo
     created=true;
     return {...latest,active,profiles:[...latest.profiles,active],
       passwords:credential ? {...latest.passwords,[active.id]:credential} : latest.passwords,
+      passwordless:credential ? (latest.passwordless ?? []).filter((id)=>id!==active.id) : [...new Set([...(latest.passwordless ?? []),active.id])],
       workspaces:{...workspaces,[active.id]:{...(guest ?? emptyWorkspace),tutorial:{step:"plan"}}},
       published:guest ? latest.published.map((row)=>row.owner==="guest" ? {...row,owner:active.id} : row) : latest.published};
   });
@@ -225,7 +279,7 @@ export async function changeProfileEmail(owner:string,value:string,password:stri
   const email=normalizeEmail(value);
   const credential=snapshot().passwords?.[owner];
   if (!validEmail(email)) return "Informe um e-mail válido.";
-  if (!await matchesLocalPassword(password,credential)) return "Confira sua senha atual.";
+  if (!await verifyProfileAccess(snapshot(),owner,password)) return credential ? "Confira sua senha atual." : "A proteção local deste perfil não pôde ser verificada.";
   let error="O perfil mudou. Abra as configurações novamente.";
   update((current)=>{
     if (current.active?.id!==owner || current.passwords?.[owner]?.hash!==credential?.hash) return current;
@@ -242,13 +296,13 @@ export async function changeProfileEmail(owner:string,value:string,password:stri
 export async function changeProfilePassword(owner:string,currentPassword:string,newPassword:string) {
   const credential=snapshot().passwords?.[owner];
   if (!validPassword(newPassword)) return "Use de 8 a 128 caracteres na nova senha.";
-  if (!await matchesLocalPassword(currentPassword,credential)) return "Confira sua senha atual.";
+  if (!await verifyProfileAccess(snapshot(),owner,currentPassword)) return credential ? "Confira sua senha atual." : "A proteção local deste perfil não pôde ser verificada.";
   const password=await makeLocalPassword(newPassword);
   let saved=false;
   update((current)=>{
     if (current.active?.id!==owner || current.passwords?.[owner]?.hash!==credential?.hash) return current;
     saved=true;
-    return {...current,passwords:{...current.passwords,[owner]:password}};
+    return {...current,passwords:{...current.passwords,[owner]:password},passwordless:(current.passwordless ?? []).filter((id)=>id!==owner)};
   });
   return saved ? "" : "O perfil mudou. Abra as configurações novamente.";
 }
@@ -272,6 +326,7 @@ export const localWorkspace = {
   getSnapshot: snapshot,
   getServerSnapshot: () => empty,
   isReady: () => restored || snapshot() !== empty,
+  persistenceIssue: () => persistenceIssue,
   getWorkspace: (current: State) => (current.active && current.workspaces[current.active.id]) || emptyWorkspace,
   isPublished,
   subscribe,

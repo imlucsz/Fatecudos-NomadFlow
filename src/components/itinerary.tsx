@@ -3,7 +3,7 @@
 import { ArrowRight, BedDouble, Bus, Check, Circle, CircleCheck, ExternalLink, Flag, KeyRound, MapPin, Pencil, Plane, Wifi } from "lucide-react";
 import { useMemo, useState } from "react";
 import { stopContext } from "@/lib/context-data";
-import { bookingStay, convert, costs, daysBetween, editStop, evidenceLabels, money, shortDate, stayOptions, ticketOptions, transportOptions, type Evidence, type Leg, type Stay, type Stop, type Trip, type Variant } from "@/lib/planning";
+import { bookingStay, convert, costs, daysBetween, editStop, evidenceLabels, isArrivalStop, money, shortDate, stayOptions, ticketOptions, transportOptions, type Evidence, type Leg, type Stay, type Stop, type Trip, type Variant } from "@/lib/planning";
 import { beginJourney, statusOf, stopStatusLabels, toggleStopCompleted } from "@/lib/journey";
 import { changeTrip, putTrip } from "./local-store";
 import { TrailExplorer } from "./trail-explorer";
@@ -59,6 +59,15 @@ function EditStop({trip,index,onClose}: {trip:Trip;index:number;onClose:() => vo
   const {result,error} = editStop(trip,index,{stay,leg,start,end});
   const delta = result ? costs(result).known-costs(trip).known : 0;
   const updatedBefore = result?.stops[index-1], updatedNext = result?.stops[index+1];
+  const affectedStops = result ? result.stops.flatMap((updated,stopIndex) => {
+    const original = trip.stops[stopIndex];
+    if (!original || (original.start === updated.start && original.end === updated.end && original.stay.id === updated.stay.id)) return [];
+    return [{original,updated}];
+  }).slice(0,5) : [];
+  const moreAffected = result ? Math.max(0,result.stops.filter((updated,stopIndex) => {
+    const original = trip.stops[stopIndex];
+    return original && (original.start !== updated.start || original.end !== updated.end || original.stay.id !== updated.stay.id);
+  }).length-affectedStops.length) : 0;
   return <Modal title={"Editar "+stop.city.name} onClose={onClose}>
     <form className="stack" onSubmit={(event)=>{
       event.preventDefault();
@@ -74,12 +83,13 @@ function EditStop({trip,index,onClose}: {trip:Trip;index:number;onClose:() => vo
       {legChoice==="manual" && <div className="form-grid"><label>Modalidade<select value={manualMode} onChange={(event)=>setManualMode(event.target.value as Leg["mode"])}><option>Avião</option><option>Ônibus</option></select></label><label>Valor por pessoa em BRL<input type="number" min="0" step=".01" value={manualFare} onChange={(event)=>setManualFare(event.target.value)} placeholder="Em aberto"/></label><label>Duração em horas<input type="number" min="1" max="72" value={manualHours} onChange={(event)=>setManualHours(event.target.value)} placeholder="Em aberto"/></label></div>}
       {error && <p className="form-error">{error}</p>}
       {conflict && <p className="form-error">A viagem mudou em outra aba. Feche e reabra a edição para revisar a versão atual.</p>}
-      {result && <div className="edit-preview"><strong>{delta===0 ? "O subtotal conhecido permanece igual" : (delta<0 ? "Economia de " : "Acréscimo de ")+money(Math.abs(delta),plan.currency)}</strong><span>Novo subtotal {money(costs(result).known,plan.currency)} · {costs(result).pending} itens sem valor</span>
+      {result && <div className="edit-preview" aria-live="polite"><strong>{delta===0 ? "O subtotal conhecido permanece igual" : (delta<0 ? "Economia de " : "Acréscimo de ")+money(Math.abs(delta),plan.currency)}</strong><span>Subtotal atual {money(costs(trip).known,plan.currency)} → novo subtotal {money(costs(result).known,plan.currency)} · {costs(result).pending} itens sem valor</span>
+        {!!affectedStops.length && <div className="replan-diff"><strong>Paradas afetadas</strong>{affectedStops.map(({original,updated})=><div className="replan-diff-row" key={updated.id}><span>{updated.city.name}</span><small>{shortDate(original.start)}–{shortDate(original.end)} → {shortDate(updated.start)}–{shortDate(updated.end)}</small></div>)}{moreAffected>0 && <small>+ {moreAffected} outras paradas afetadas</small>}</div>}
         {previous && updatedBefore && <span>{previous.city.name} → {stop.city.name} · partida em {shortDate(updatedBefore.end,true)}</span>}
         {next && updatedNext && <span>{stop.city.name} → {next.city.name} · partida em {shortDate(end,true)} · check-in em {shortDate(updatedNext.start,true)}</span>}
-        <small className="quiet">Os eventos afetados são recalculados. Reservas já registradas preservam o histórico e entram em revisão.</small>
+        <small className="quiet">Nada é salvo até você confirmar. Ao cancelar, o plano original permanece intacto. Reservas já registradas preservam o histórico e entram em revisão.</small>
       </div>}
-      <button className="button" type="submit" disabled={!result || conflict}>Salvar alteração <Check size={17}/></button>
+      <div className="edit-actions"><button className="button button-outline" type="button" onClick={onClose}>Cancelar sem alterar</button><button className="button" type="submit" disabled={!result || conflict}>Confirmar replanejamento <Check size={17}/></button></div>
     </form>
   </Modal>;
 }
@@ -90,16 +100,23 @@ function StopDetails({variant,index,trip,showStaySearch}: {
   const stop = variant.stops[index];
   const {currency,travelers} = variant.plan;
   const status = trip ? statusOf(stop,trip.journey?.currentStopId) : undefined;
+  const arrivalOnly = isArrivalStop(variant,index);
   return <div className="stop-detail">
     <div className="stop-header">
       <div aria-live="polite">
         <span className="stop-country"><MapPin size={13}/> {stop.city.country}</span>
         <h3>{stop.city.name}</h3>
-        <div className="stop-dates">{shortDate(stop.start,true)} – {shortDate(stop.end,true)} <span>· {daysBetween(stop.start,stop.end)} noites</span></div>
+        <div className="stop-dates">{arrivalOnly ? "Chegada em "+shortDate(stop.start,true) : <>{shortDate(stop.start,true)} – {shortDate(stop.end,true)} <span>· {daysBetween(stop.start,stop.end)} noites</span></>}</div>
       </div>
       {status && <span className={"status stop-state "+status}>{stopStatusLabels[status]}</span>}
     </div>
-    <section className="stay-keycard" aria-label="Hospedagem da parada">
+    {arrivalOnly ? <section className="stay-keycard" aria-label="Chegada final">
+      <span className="stay-keycard-icon" aria-hidden="true"><Flag size={19}/></span>
+      <div className="stay-keycard-info">
+        <small>Chegada final</small><strong>{stop.city.name}</strong>
+        <small>Esta parada representa a chegada da viagem e não gera hospedagem.</small>
+      </div>
+    </section> : <section className="stay-keycard" aria-label="Hospedagem da parada">
       <span className="stay-keycard-icon" aria-hidden="true"><KeyRound size={19}/></span>
       <div className="stay-keycard-info">
         <small>Hospedagem</small><strong>{stop.stay.name}</strong>
@@ -108,7 +125,7 @@ function StopDetails({variant,index,trip,showStaySearch}: {
       {showStaySearch && <div className="stay-keycard-actions">
         <a className="button button-outline button-small" href={bookingStay(stop,travelers)} target="_blank" rel="noreferrer"><BedDouble size={14}/> Buscar hospedagem <ExternalLink size={12}/></a>
       </div>}
-    </section>
+    </section>}
   </div>;
 }
 
@@ -168,7 +185,7 @@ export function Itinerary({variant,trip,bookingOptions=trip ? {} : undefined,onC
   return <>
     <TrailExplorer points={markers} pending={pending} selected={stop.id} onSelect={setSelected} tracking={!!trip} onCafes={onCafes} nearbyAction={nearbyAction}
       bookings={bookingOptions && {...bookingOptions,variant,trip}} mapId={mapId}
-      stopOptions={<StopTravelOptions variant={variant} index={index} onEdit={trip ? ()=>setEditing(true) : undefined} actions={actions}/>}
+      stopOptions={<StopTravelOptions variant={variant} index={index} onEdit={trip && !isArrivalStop(variant,index) ? ()=>setEditing(true) : undefined} actions={actions}/>}
       stop={stop} extras={<StopOpportunities stop={stop} key={stop.id}/>}>
       <StopDetails variant={variant} index={index} trip={trip} showStaySearch={!bookingOptions}/>
     </TrailExplorer>

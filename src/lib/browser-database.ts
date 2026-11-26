@@ -5,6 +5,10 @@ let opening:Promise<IDBDatabase>|undefined;
 
 function database() {
   if (!opening) opening=new Promise<IDBDatabase>((resolve,reject)=>{
+    if (typeof indexedDB === "undefined") {
+      reject(new Error("Banco local indisponível neste navegador."));
+      return;
+    }
     const request=indexedDB.open(name,1);
     let blocked=false;
     request.onupgradeneeded=()=>request.result.createObjectStore(store);

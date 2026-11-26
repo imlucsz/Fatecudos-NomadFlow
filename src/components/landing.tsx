@@ -35,8 +35,9 @@ const sentenceBreak = titleLines[0].length;
 const titleLength = sentenceBreak + titleLines[1].length;
 
 function HeroTitle() {
-  const [step,setStep] = useState(0);
+  const [step,setStep] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? titleLength : 0);
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let nextStep = 0;
     let timer = window.setTimeout(advance,110);
     function advance() {

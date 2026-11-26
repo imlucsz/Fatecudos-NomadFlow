@@ -21,7 +21,7 @@ export type Stay = { id: string; type: StayType; name: string; nightly: number |
 export type Stop = { id: string; city: City; start: string; end: string; stay: Stay; done: boolean };
 export type Leg = { id: string; from: string; to: string; mode: Mode; hours: number | null; price: number | null; status: Evidence; provider: string; url?: string };
 export type Variant = { id: Strategy; plan: Plan; stops: Stop[]; legs: Leg[]; calibration: number };
-export type Reservation = { state: "visited" | "registered"; date: string; paid?: number; signature: string; item: string; confirmedByTraveler?: boolean; googleCalendarLink?: string; googleCalendarTime?: string };
+export type Reservation = { state: "visited" | "registered" | "invalidated"; date: string; paid?: number; signature: string; item: string; confirmedByTraveler?: boolean; googleCalendarLink?: string; googleCalendarTime?: string; replaced?: { day: string; until?: string; kind: string; signature: string } };
 export type Trip = Variant & {
   tripId: string; title: string; revision: number; created: string;
   reservations: Record<string, Reservation>; reminders: Record<string, string>;
@@ -45,6 +45,13 @@ export function localDay(zone: string, now = new Date()) {
 }
 export const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 export const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0,10);
+export function validDateKey(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const [,year,month,day] = match.map(Number);
+  const date = new Date(Date.UTC(year,month-1,day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month-1 && date.getUTCDate() === day;
+}
 export function addMonths(date: string, n: number) {
   const [year, month, day] = date.split("-").map(Number);
   const target = new Date(Date.UTC(year, month - 1 + n, 1));
@@ -104,6 +111,7 @@ export function sequence(plan: Plan) {
 
 export const contextCities = new Set(["sao-paulo","buenos-aires","lima","lisbon","hanoi","delhi","kathmandu","bangkok","rome","amman","bogota","santiago"]);
 export const arrivesAtEnd = (plan:Plan) => !!plan.arriveAtEnd && !plan.loop;
+export const isArrivalStop = (variant: Pick<Variant,"plan"|"stops">, index: number) => arrivesAtEnd(variant.plan) && index === variant.stops.length-1;
 
 export function stayOptions(place: City): Stay[] {
   const point = address(place);
@@ -163,23 +171,27 @@ export function transportBudget({legs,plan}:Variant) {
 }
 
 export function costs(variant: Variant) {
-  const { plan, stops, legs, calibration } = variant;
-  const nights = stops.reduce((sum, stop) => sum + daysBetween(stop.start,stop.end),0);
+  const { plan, stops, legs } = variant;
+  const tripDays = Math.max(0,daysBetween(plan.start,plan.endDate));
+  const lodgingNights = stops.reduce((sum, stop, index) => sum + (isArrivalStop(variant,index) ? 0 : daysBetween(stop.start,stop.end)),0);
   const transport = transportBudget(variant);
-  const lodging = stops.reduce((sum, stop) => sum + nightlyForGroup(stop.stay,plan.travelers)*daysBetween(stop.start,stop.end),0);
+  const lodging = stops.reduce((sum, stop, index) => sum + (isArrivalStop(variant,index) ? 0 : nightlyForGroup(stop.stay,plan.travelers)*daysBetween(stop.start,stop.end)),0);
   const rates: Record<Extra, number> = {"Alimentação":75,"Mobilidade":16,"Internet e coworking":17,"Passeios":20,"Seguro":9,"Imprevistos":12};
   const rows = [
     {label:"Transporte",value:transport.estimated},
     {label:"Hospedagem",value:convert(lodging,plan.currency)},
-    ...plan.extras.map((label) => ({label,value:convert(rates[label]*nights*plan.travelers*100 + (label === "Alimentação" ? calibration : 0),plan.currency)})),
+    ...plan.extras.map((label) => ({label,value:convert(rates[label]*tripDays*plan.travelers*100,plan.currency)})),
   ];
   const known = rows.reduce((sum,row) => sum+row.value,0);
-  const pending = stops.filter((stop) => stop.stay.nightly === null).length + transport.pending;
-  return {rows, known, pending, over:plan.budget ? Math.max(0,known-plan.budget) : 0, spare:plan.budget ? Math.max(0,plan.budget-known) : 0, hours:legs.reduce((sum,leg) => sum+(leg.hours ?? 0),0), nights};
+  const pendingStays = stops.filter((stop,index) => !isArrivalStop(variant,index) && stop.stay.nightly === null).length;
+  const pending = pendingStays + transport.pending;
+  return {rows, known, pending, over:plan.budget ? Math.max(0,known-plan.budget) : 0, spare:plan.budget ? Math.max(0,plan.budget-known) : 0, hours:legs.reduce((sum,leg) => sum+(leg.hours ?? 0),0), nights:lodgingNights, days:tripDays, lodgingNights, transitDays:legs.reduce((sum,leg) => sum+transitDays(leg),0)};
 }
 
 export function validatePlan(plan: Plan) {
   if (!plan.origin.name || !plan.end.name || !plan.start || !plan.endDate) return "Preencha a origem, o destino e as datas.";
+  if (!validDateKey(plan.start) || !validDateKey(plan.endDate)) return "Informe datas válidas no calendário.";
+  if (daysBetween(plan.start,plan.endDate) < 1) return "A data de término deve ser depois da saída.";
   if (!plan.loop && plan.origin.id === plan.end.id) return "Escolha um destino diferente da origem ou ative o retorno.";
   if (plan.loop && plan.via.length === 0) return "Adicione pelo menos uma parada para montar um circuito.";
   if (plan.endDate > addMonths(plan.start,24)) return "O período máximo é de 24 meses.";
@@ -196,7 +208,7 @@ export function generate(plan: Plan): Variant[] {
   const arrival=arrivesAtEnd(plan);
   const overnight=arrival ? route.slice(0,-1) : route;
   const duration = daysBetween(plan.start,plan.endDate);
-  const variantIds = ["economic","balanced","comfort"] as const;
+  const variantIds = ["economic","balanced","comfort","work"] as const;
   const southDemo=plan.preset === "south" && duration === 365 && plan.travelers === 1 && plan.currency === "BRL" && plan.transport === "qualquer" && plan.extras.length === extras.length && plan.stays.includes("Hostel") && plan.via.length === south.length && south.every((place) => plan.via.some((item) => item.id === place.id));
   const variants = variantIds.flatMap((id): Variant[] => {
     const legs = route.slice(1).map((to,index) => {
@@ -213,7 +225,7 @@ export function generate(plan: Plan): Variant[] {
       const pace = plan.pace === "tranquilo" ? 2 : plan.pace === "intenso" ? 6 : 4;
       if (plan.loop && index === route.length-1) return .2;
       if (id === "economic" && place.night > 0 && place.night <= 90) return pace + 2;
-      if (id === "balanced" && plan.internet && contextCities.has(place.id) && !southDemo) return pace+1;
+      if ((id === "balanced" || id === "work") && plan.internet && contextCities.has(place.id) && !southDemo) return pace+(id === "work" ? 2 : 1);
       return pace;
     });
     let elapsed = 0, weighted = 0;
@@ -223,9 +235,9 @@ export function generate(plan: Plan): Variant[] {
       const priced = [...allowed].sort((a,b)=>nightlyForGroup(a,plan.travelers)-nightlyForGroup(b,plan.travelers));
       const lowest=priced[0];
       const middle=priced.find((item)=>item.id==="season" && item!==lowest) ?? priced.find((item)=>item!==lowest && item.id!=="premium") ?? lowest;
-      const stay=id==="economic" ? lowest : id==="balanced" ? (southDemo ? allowed.find((item)=>item.id==="hostel")! : middle)
+      const stay=id==="economic" ? lowest : id==="balanced" || id==="work" ? (southDemo ? allowed.find((item)=>item.id==="hostel")! : middle)
         : allowed.find((item)=>item.id==="premium") ?? priced.at(-1)!;
-      if (arrival && index===route.length-1) return {id:"stop-"+index,city:place,start:plan.endDate,end:addDays(plan.endDate,1),stay,done:false};
+      if (arrival && index===route.length-1) return {id:"stop-"+index,city:place,start:plan.endDate,end:plan.endDate,stay,done:false};
       const nights = 1 + Math.round((weighted+weights[index])*scale)-Math.round(weighted*scale);
       weighted += weights[index];
       const start = addDays(plan.start,elapsed);
@@ -236,11 +248,6 @@ export function generate(plan: Plan): Variant[] {
     });
     return [{id,plan,stops,legs,calibration:0}];
   });
-  const reference = variants.find((item) => item.id === "balanced");
-  if (reference && southDemo) {
-    const gap = 8800000 - costs(reference).known;
-    for (const item of variants) item.calibration = gap;
-  }
   const seen = new Set<string>();
   return variants.filter((variant) => {
     const key = JSON.stringify([variant.stops.map((stop) => [stop.start,stop.end,stop.stay.id]),variant.legs.map((leg) => leg.mode)]);
@@ -254,9 +261,12 @@ export type StopEdit = { stay: Stay; leg?: Leg; start: string; end: string };
 
 export function editStop(trip: Trip, index: number, change: StopEdit): { result?: Trip; error?: string } {
   const current = trip.stops[index];
+  if (!current) return {error:"Parada não encontrada nesta viagem."};
+  if (isArrivalStop(trip,index)) return {error:"A chegada final não possui hospedagem. Ajuste a parada anterior para mudar a data de chegada."};
   const previous = trip.stops[index-1];
   const inbound = change.leg ?? trip.legs[index-1];
-  if (!change.start || !change.end || daysBetween(change.start,change.end) < 1) return {error:"A saída deve acontecer depois da chegada."};
+  if (!change.start || !change.end || !validDateKey(change.start) || !validDateKey(change.end)) return {error:"Informe datas válidas no calendário."};
+  if (daysBetween(change.start,change.end) < 1) return {error:"A saída deve acontecer depois da chegada."};
   const previousEnd = previous && addDays(change.start,-transitDays(inbound));
   if (previous && previousEnd && daysBetween(previous.start,previousEnd)<1) return {error:"Mantenha ao menos uma noite na parada anterior e tempo para o deslocamento."};
   const shift = daysBetween(current.end,change.end);
@@ -272,12 +282,21 @@ export function editStop(trip: Trip, index: number, change: StopEdit): { result?
   const result = {...trip,stops,legs,plan:{...trip.plan,start,endDate},revision:trip.revision+1};
   const oldQueue = queue(trip);
   const revisedQueue = queue(result);
+  const reservations={...trip.reservations};
+  for (const [id,reservation] of Object.entries(reservations)) {
+    if (reservation.state!=="registered" || reservation.replaced) continue;
+    const before=oldQueue.find((item)=>item.id===id);
+    const after=revisedQueue.find((item)=>item.id===id);
+    if (before && (!after || after.signature!==reservation.signature)) {
+      reservations[id]={...reservation,replaced:{day:before.day,until:before.until,kind:before.kind,signature:before.signature}};
+    }
+  }
   const reminders = Object.fromEntries(Object.entries(trip.reminders).filter(([id]) => revisedQueue.some((item) => item.id === id && item.signature === oldQueue.find((old) => old.id === id)?.signature)));
-  return {result:{...result,reminders}};
+  return {result:{...result,reservations,reminders}};
 }
 
 export const evidenceLabels: Record<Evidence,string> = {
-  ready:"Disponível para consulta",future:"Venda ainda fechada",review:"Rechecagem pendente",
+  ready:"Disponível para consulta",future:"Venda ainda fechada",review:"Verificação pendente",
   missing:"Sem oferta encontrada",expired:"Cotação expirada",error:"Fonte indisponível",
 };
 
@@ -345,6 +364,25 @@ export function registeredReservation(item:QueueItem) {
   return item.reservation?.state==="registered" && item.reservation.signature===item.signature ? item.reservation : undefined;
 }
 
+export type InvalidReservation = { id: string; reservation: Reservation; current?: QueueItem };
+export function invalidReservations(trip: Trip): InvalidReservation[] {
+  const items=queue(trip);
+  return Object.entries(trip.reservations).flatMap(([id,reservation]) => {
+    if (reservation.state!=="registered") return [];
+    const current=items.find((item)=>item.id===id);
+    if (current?.signature===reservation.signature) return [];
+    return [{id,reservation,current}];
+  }).sort((a,b)=>a.reservation.date.localeCompare(b.reservation.date));
+}
+
+export function archiveInvalidReservation(trip: Trip, id: string, signature: string) {
+  const reservation=trip.reservations[id];
+  if (!reservation || reservation.state!=="registered" || reservation.signature!==signature) return trip;
+  const current=queue(trip).find((item)=>item.id===id);
+  if (current?.signature===signature) return trip;
+  return {...trip,revision:trip.revision+1,reservations:{...trip.reservations,[id]:{...reservation,state:"invalidated" as const}}};
+}
+
 export function reservationLabel(item:QueueItem) {
   return item.kind==="Hospedagem" ? "Hospedagem reservada" : "Passagem comprada";
 }
@@ -384,12 +422,12 @@ export function queue(trip: Trip, now = new Date()): QueueItem[] {
     return {...data,signature,checked,reservation:trip.reservations[data.id],reminder:trip.reminders[data.id],
       time:timing?.signature===signature ? timing.time : undefined};
   }
-  const stays = stops.map((stop) => row({
+  const stays = stops.flatMap((stop,index) => isArrivalStop(trip,index) ? [] : [row({
     id:stop.id,name:stop.stay.name+" · "+stop.city.name,kind:"Hospedagem",provider:stop.stay.provider,url:stop.stay.provider==="Booking.com" ? bookingStay(stop,plan.travelers) : stop.stay.url,
     day:stop.start,until:stop.end,zone:stop.city.tz,status:stop.stay.status,
     expires:stop.stay.status === "expired" ? addDays(checked,-1) : undefined,
     value:stop.stay.nightly === null ? null : convert(stop.stay.nightly*daysBetween(stop.start,stop.end)*(stop.stay.type === "Hostel" ? plan.travelers : Math.ceil(plan.travelers/2)),plan.currency),
-  }));
+  })]);
   const fares = legs.map((leg,index) => {
     const from = stops[index], to = stops[index+1];
     const opens = leg.status === "future" ? addDays(from.end,-30) : undefined;
@@ -435,8 +473,10 @@ export function calendar(trip: Trip, now = new Date()): CalendarEvent[] {
   }
   for (const [index,stop] of trip.stops.entries()) {
     const tz = stop.city.tz;
-    add(stop.id+"-in","Check-in · "+stop.stay.name,stop.start,bookings.get(stop.id)?.time ?? 19,tz,"Hospedagem",undefined,stop.id);
-    add(stop.id+"-out","Check-out · "+stop.city.name,stop.end,8,tz,"Hospedagem");
+    if (!isArrivalStop(trip,index)) {
+      add(stop.id+"-in","Check-in · "+stop.stay.name,stop.start,bookings.get(stop.id)?.time ?? 19,tz,"Hospedagem",undefined,stop.id);
+      add(stop.id+"-out","Check-out · "+stop.city.name,stop.end,8,tz,"Hospedagem");
+    }
     const next = trip.stops[index+1];
     if (!next) continue;
     const leg = trip.legs[index];
@@ -465,8 +505,10 @@ export function ics(trip: Trip) {
   const timed = new Set(queue(trip).filter((item)=>item.time).map((item)=>item.id));
   for (const event of calendar(trip)) {
     const allDay=event.bookingId && !timed.has(event.bookingId);
+    const end=allDay ? undefined : new Date(+event.instant+(event.type==="Hospedagem" ? 60 : event.type==="Viagem" ? 30 : 15)*60000);
     lines.push("BEGIN:VEVENT","UID:"+trip.tripId+"-"+event.id+"@nomadflow","SEQUENCE:"+trip.revision,"DTSTAMP:"+stamp(new Date()),
       allDay ? "DTSTART;VALUE=DATE:"+event.day.replaceAll("-","") : "DTSTART:"+stamp(event.instant),
+      allDay ? "DTEND;VALUE=DATE:"+addDays(event.day,1).replaceAll("-","") : "DTEND:"+stamp(end!),
       "SUMMARY:"+escape(event.title),"DESCRIPTION:"+escape((allDay ? "Horário a confirmar · " : "")+event.tz+" · NomadFlow"));
     if (event.alarm) lines.push("BEGIN:VALARM","ACTION:DISPLAY","TRIGGER;VALUE=DATE-TIME:"+stamp(event.alarm),"DESCRIPTION:Lembrete de partida","END:VALARM");
     lines.push("END:VEVENT");
@@ -476,10 +518,16 @@ export function ics(trip: Trip) {
   return lines.map((line) => {
     const parts: string[] = [];
     let part = "";
+    let capacity = 75;
     for (const char of line) {
-      if (encoder.encode(part+char).length > 75) { parts.push(part); part = " "; }
+      if (encoder.encode(part+char).length > capacity) {
+        parts.push(part);
+        part = "";
+        capacity = 74;
+      }
       part += char;
     }
-    return [...parts,part].join("\r\n");
+    parts.push(part);
+    return parts.map((part,index)=>(index ? " " : "")+part).join("\r\n");
   }).join("\r\n") + "\r\n";
 }

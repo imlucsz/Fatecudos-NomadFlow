@@ -11,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return <html lang="pt-BR"><body><LocalProvider><GoogleCalendarProvider>{children}</GoogleCalendarProvider></LocalProvider></body></html>;
+  return <html lang="pt-BR" data-scroll-behavior="smooth"><body><LocalProvider><GoogleCalendarProvider>{children}</GoogleCalendarProvider></LocalProvider></body></html>;
 }

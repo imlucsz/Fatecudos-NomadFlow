@@ -229,7 +229,7 @@ function PlanForm({initial,fromMessage,initialDestination,requestPrompt}: {initi
           <button type="button" className="button button-outline button-small" onClick={()=>switchMode(true)} disabled={voiceActive}><MapPin size={15}/> Editar rota</button>
         </div>
         <PlannerDetails plan={plan} onSetting={setSetting}/>
-        <h3 className="planner-package-heading">Escolha seu pacote</h3>
+        <h3 className="planner-package-heading">Escolha sua proposta</h3>
         <VariantOptions variants={variants} choice={variant.id} onSelect={setChoice} compact/>
         <p className="planner-package-note">{strategies[variant.id].summary}{totals?.pending ? " "+totals.pending+(totals.pending===1 ? " item a consultar." : " itens a consultar.") : ""}{totals?.over ? " "+money(totals.over,plan.currency)+" acima do orçamento." : ""}</p>
         {!tutorial?.ticketsOpened && <TutorialCard step="tickets" title="Confira as passagens da rota" targets={["tickets"]}>
