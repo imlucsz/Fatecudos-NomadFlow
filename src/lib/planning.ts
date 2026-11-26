@@ -111,6 +111,7 @@ export function sequence(plan: Plan) {
 
 export const contextCities = new Set(["sao-paulo","buenos-aires","lima","lisbon","hanoi","delhi","kathmandu","bangkok","rome","amman","bogota","santiago"]);
 export const arrivesAtEnd = (plan:Plan) => !!plan.arriveAtEnd && !plan.loop;
+export const isArrivalStop = (variant: Pick<Variant,"plan"|"stops">, index: number) => arrivesAtEnd(variant.plan) && index === variant.stops.length-1;
 
 export function stayOptions(place: City): Stay[] {
   const point = address(place);
@@ -170,19 +171,21 @@ export function transportBudget({legs,plan}:Variant) {
 }
 
 export function costs(variant: Variant) {
-  const { plan, stops, legs, calibration } = variant;
-  const nights = stops.reduce((sum, stop) => sum + daysBetween(stop.start,stop.end),0);
+  const { plan, stops, legs } = variant;
+  const tripDays = Math.max(0,daysBetween(plan.start,plan.endDate));
+  const lodgingNights = stops.reduce((sum, stop, index) => sum + (isArrivalStop(variant,index) ? 0 : daysBetween(stop.start,stop.end)),0);
   const transport = transportBudget(variant);
-  const lodging = stops.reduce((sum, stop) => sum + nightlyForGroup(stop.stay,plan.travelers)*daysBetween(stop.start,stop.end),0);
+  const lodging = stops.reduce((sum, stop, index) => sum + (isArrivalStop(variant,index) ? 0 : nightlyForGroup(stop.stay,plan.travelers)*daysBetween(stop.start,stop.end)),0);
   const rates: Record<Extra, number> = {"Alimentação":75,"Mobilidade":16,"Internet e coworking":17,"Passeios":20,"Seguro":9,"Imprevistos":12};
   const rows = [
     {label:"Transporte",value:transport.estimated},
     {label:"Hospedagem",value:convert(lodging,plan.currency)},
-    ...plan.extras.map((label) => ({label,value:convert(rates[label]*nights*plan.travelers*100 + (label === "Alimentação" ? calibration : 0),plan.currency)})),
+    ...plan.extras.map((label) => ({label,value:convert(rates[label]*tripDays*plan.travelers*100,plan.currency)})),
   ];
   const known = rows.reduce((sum,row) => sum+row.value,0);
-  const pending = stops.filter((stop) => stop.stay.nightly === null).length + transport.pending;
-  return {rows, known, pending, over:plan.budget ? Math.max(0,known-plan.budget) : 0, spare:plan.budget ? Math.max(0,plan.budget-known) : 0, hours:legs.reduce((sum,leg) => sum+(leg.hours ?? 0),0), nights};
+  const pendingStays = stops.filter((stop,index) => !isArrivalStop(variant,index) && stop.stay.nightly === null).length;
+  const pending = pendingStays + transport.pending;
+  return {rows, known, pending, over:plan.budget ? Math.max(0,known-plan.budget) : 0, spare:plan.budget ? Math.max(0,plan.budget-known) : 0, hours:legs.reduce((sum,leg) => sum+(leg.hours ?? 0),0), nights:lodgingNights, days:tripDays, lodgingNights, transitDays:legs.reduce((sum,leg) => sum+transitDays(leg),0)};
 }
 
 export function validatePlan(plan: Plan) {
@@ -234,7 +237,7 @@ export function generate(plan: Plan): Variant[] {
       const middle=priced.find((item)=>item.id==="season" && item!==lowest) ?? priced.find((item)=>item!==lowest && item.id!=="premium") ?? lowest;
       const stay=id==="economic" ? lowest : id==="balanced" || id==="work" ? (southDemo ? allowed.find((item)=>item.id==="hostel")! : middle)
         : allowed.find((item)=>item.id==="premium") ?? priced.at(-1)!;
-      if (arrival && index===route.length-1) return {id:"stop-"+index,city:place,start:plan.endDate,end:addDays(plan.endDate,1),stay,done:false};
+      if (arrival && index===route.length-1) return {id:"stop-"+index,city:place,start:plan.endDate,end:plan.endDate,stay,done:false};
       const nights = 1 + Math.round((weighted+weights[index])*scale)-Math.round(weighted*scale);
       weighted += weights[index];
       const start = addDays(plan.start,elapsed);
@@ -245,11 +248,6 @@ export function generate(plan: Plan): Variant[] {
     });
     return [{id,plan,stops,legs,calibration:0}];
   });
-  const reference = variants.find((item) => item.id === "balanced");
-  if (reference && southDemo) {
-    const gap = 8800000 - costs(reference).known;
-    for (const item of variants) item.calibration = gap;
-  }
   const seen = new Set<string>();
   return variants.filter((variant) => {
     const key = JSON.stringify([variant.stops.map((stop) => [stop.start,stop.end,stop.stay.id]),variant.legs.map((leg) => leg.mode)]);
@@ -264,6 +262,7 @@ export type StopEdit = { stay: Stay; leg?: Leg; start: string; end: string };
 export function editStop(trip: Trip, index: number, change: StopEdit): { result?: Trip; error?: string } {
   const current = trip.stops[index];
   if (!current) return {error:"Parada não encontrada nesta viagem."};
+  if (isArrivalStop(trip,index)) return {error:"A chegada final não possui hospedagem. Ajuste a parada anterior para mudar a data de chegada."};
   const previous = trip.stops[index-1];
   const inbound = change.leg ?? trip.legs[index-1];
   if (!change.start || !change.end || !validDateKey(change.start) || !validDateKey(change.end)) return {error:"Informe datas válidas no calendário."};
@@ -395,12 +394,12 @@ export function queue(trip: Trip, now = new Date()): QueueItem[] {
     return {...data,signature,checked,reservation:trip.reservations[data.id],reminder:trip.reminders[data.id],
       time:timing?.signature===signature ? timing.time : undefined};
   }
-  const stays = stops.map((stop) => row({
+  const stays = stops.flatMap((stop,index) => isArrivalStop(trip,index) ? [] : [row({
     id:stop.id,name:stop.stay.name+" · "+stop.city.name,kind:"Hospedagem",provider:stop.stay.provider,url:stop.stay.provider==="Booking.com" ? bookingStay(stop,plan.travelers) : stop.stay.url,
     day:stop.start,until:stop.end,zone:stop.city.tz,status:stop.stay.status,
     expires:stop.stay.status === "expired" ? addDays(checked,-1) : undefined,
     value:stop.stay.nightly === null ? null : convert(stop.stay.nightly*daysBetween(stop.start,stop.end)*(stop.stay.type === "Hostel" ? plan.travelers : Math.ceil(plan.travelers/2)),plan.currency),
-  }));
+  })]);
   const fares = legs.map((leg,index) => {
     const from = stops[index], to = stops[index+1];
     const opens = leg.status === "future" ? addDays(from.end,-30) : undefined;
@@ -446,8 +445,10 @@ export function calendar(trip: Trip, now = new Date()): CalendarEvent[] {
   }
   for (const [index,stop] of trip.stops.entries()) {
     const tz = stop.city.tz;
-    add(stop.id+"-in","Check-in · "+stop.stay.name,stop.start,bookings.get(stop.id)?.time ?? 19,tz,"Hospedagem",undefined,stop.id);
-    add(stop.id+"-out","Check-out · "+stop.city.name,stop.end,8,tz,"Hospedagem");
+    if (!isArrivalStop(trip,index)) {
+      add(stop.id+"-in","Check-in · "+stop.stay.name,stop.start,bookings.get(stop.id)?.time ?? 19,tz,"Hospedagem",undefined,stop.id);
+      add(stop.id+"-out","Check-out · "+stop.city.name,stop.end,8,tz,"Hospedagem");
+    }
     const next = trip.stops[index+1];
     if (!next) continue;
     const leg = trip.legs[index];

@@ -3,7 +3,7 @@
 import { ArrowRight, BedDouble, Bus, Check, Circle, CircleCheck, ExternalLink, Flag, KeyRound, MapPin, Pencil, Plane, Wifi } from "lucide-react";
 import { useMemo, useState } from "react";
 import { stopContext } from "@/lib/context-data";
-import { bookingStay, convert, costs, daysBetween, editStop, evidenceLabels, money, shortDate, stayOptions, ticketOptions, transportOptions, type Evidence, type Leg, type Stay, type Stop, type Trip, type Variant } from "@/lib/planning";
+import { bookingStay, convert, costs, daysBetween, editStop, evidenceLabels, isArrivalStop, money, shortDate, stayOptions, ticketOptions, transportOptions, type Evidence, type Leg, type Stay, type Stop, type Trip, type Variant } from "@/lib/planning";
 import { beginJourney, statusOf, stopStatusLabels, toggleStopCompleted } from "@/lib/journey";
 import { changeTrip, putTrip } from "./local-store";
 import { TrailExplorer } from "./trail-explorer";
@@ -100,16 +100,23 @@ function StopDetails({variant,index,trip,showStaySearch}: {
   const stop = variant.stops[index];
   const {currency,travelers} = variant.plan;
   const status = trip ? statusOf(stop,trip.journey?.currentStopId) : undefined;
+  const arrivalOnly = isArrivalStop(variant,index);
   return <div className="stop-detail">
     <div className="stop-header">
       <div aria-live="polite">
         <span className="stop-country"><MapPin size={13}/> {stop.city.country}</span>
         <h3>{stop.city.name}</h3>
-        <div className="stop-dates">{shortDate(stop.start,true)} – {shortDate(stop.end,true)} <span>· {daysBetween(stop.start,stop.end)} noites</span></div>
+        <div className="stop-dates">{arrivalOnly ? "Chegada em "+shortDate(stop.start,true) : <>{shortDate(stop.start,true)} – {shortDate(stop.end,true)} <span>· {daysBetween(stop.start,stop.end)} noites</span></>}</div>
       </div>
       {status && <span className={"status stop-state "+status}>{stopStatusLabels[status]}</span>}
     </div>
-    <section className="stay-keycard" aria-label="Hospedagem da parada">
+    {arrivalOnly ? <section className="stay-keycard" aria-label="Chegada final">
+      <span className="stay-keycard-icon" aria-hidden="true"><Flag size={19}/></span>
+      <div className="stay-keycard-info">
+        <small>Chegada final</small><strong>{stop.city.name}</strong>
+        <small>Esta parada representa a chegada da viagem e não gera hospedagem.</small>
+      </div>
+    </section> : <section className="stay-keycard" aria-label="Hospedagem da parada">
       <span className="stay-keycard-icon" aria-hidden="true"><KeyRound size={19}/></span>
       <div className="stay-keycard-info">
         <small>Hospedagem</small><strong>{stop.stay.name}</strong>
@@ -118,7 +125,7 @@ function StopDetails({variant,index,trip,showStaySearch}: {
       {showStaySearch && <div className="stay-keycard-actions">
         <a className="button button-outline button-small" href={bookingStay(stop,travelers)} target="_blank" rel="noreferrer"><BedDouble size={14}/> Buscar hospedagem <ExternalLink size={12}/></a>
       </div>}
-    </section>
+    </section>}
   </div>;
 }
 
@@ -178,7 +185,7 @@ export function Itinerary({variant,trip,bookingOptions=trip ? {} : undefined,onC
   return <>
     <TrailExplorer points={markers} pending={pending} selected={stop.id} onSelect={setSelected} tracking={!!trip} onCafes={onCafes} nearbyAction={nearbyAction}
       bookings={bookingOptions && {...bookingOptions,variant,trip}} mapId={mapId}
-      stopOptions={<StopTravelOptions variant={variant} index={index} onEdit={trip ? ()=>setEditing(true) : undefined} actions={actions}/>}
+      stopOptions={<StopTravelOptions variant={variant} index={index} onEdit={trip && !isArrivalStop(variant,index) ? ()=>setEditing(true) : undefined} actions={actions}/>}
       stop={stop} extras={<StopOpportunities stop={stop} key={stop.id}/>}>
       <StopDetails variant={variant} index={index} trip={trip} showStaySearch={!bookingOptions}/>
     </TrailExplorer>

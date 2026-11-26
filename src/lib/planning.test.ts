@@ -91,3 +91,37 @@ test("editStop valida índice e datas sem lançar exceção", () => {
   assert.match(editStop(trip,0,{stay:first.stay,start:"2027-02-29",end:first.end}).error ?? "",/datas válidas/);
   assert.match(editStop(trip,0,{stay:first.stay,start:first.end,end:first.start}).error ?? "",/depois da chegada/);
 });
+
+test("arriveAtEnd trata o destino final como chegada sem noite extra", () => {
+  const plan = demoPlan();
+  plan.arriveAtEnd = true;
+  const variant = generate(plan)[0];
+  const final = variant.stops.at(-1)!;
+  assert.equal(final.start,plan.endDate);
+  assert.equal(final.end,plan.endDate);
+  assert.equal(daysBetween(final.start,final.end),0);
+  assert.equal(costs(variant).days,daysBetween(plan.start,plan.endDate));
+});
+
+test("despesas diárias usam todos os dias da viagem e ignoram calibração legada", () => {
+  const plan = demoPlan();
+  const variant = generate(plan)[0];
+  const tripDays = daysBetween(plan.start,plan.endDate);
+  const totals = costs(variant);
+  const food = totals.rows.find((row) => row.label === "Alimentação");
+  assert.equal(food?.value,75*tripDays*plan.travelers*100);
+  assert.equal(costs({...variant,calibration:987654321}).known,totals.known);
+  assert.ok(totals.transitDays >= 0);
+  assert.ok(totals.lodgingNights <= tripDays);
+});
+
+test("editStop explica que a chegada final não é uma hospedagem editável", () => {
+  const plan = demoPlan();
+  plan.arriveAtEnd = true;
+  const variant = generate(plan)[0];
+  const trip: Trip = {...variant,tripId:"arrival",title:"Chegada",revision:1,created:"2027-01-01T00:00:00.000Z",reservations:{},reminders:{}};
+  const final = trip.stops.at(-1)!;
+  const result = editStop(trip,trip.stops.length-1,{stay:final.stay,start:final.start,end:final.end});
+  assert.match(result.error ?? "",/chegada final/i);
+  assert.equal(result.result,undefined);
+});
