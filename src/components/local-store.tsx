@@ -36,6 +36,7 @@ function useLocalState() {
     routeActivity: current.routeActivity ?? emptyActivityByRoute,
     owner: active?.id ?? "guest",
     ready,
+    persistenceIssue: localWorkspace.persistenceIssue(),
   };
 }
 

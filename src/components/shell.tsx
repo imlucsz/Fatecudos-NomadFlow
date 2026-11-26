@@ -36,12 +36,13 @@ function AccountFrame({children}: {children:React.ReactNode}) {
 }
 
 function AppFrame({children,wide,banner}: {children:React.ReactNode;wide:boolean;banner?:React.ReactNode}) {
-  const {tutorial}=useLocal();
+  const {tutorial,persistenceIssue}=useLocal();
   return <div className="app-shell" data-banner={!!banner} data-wide={wide} data-tutorial-step={tutorial?.step}>
     {!banner && <div className="app-header"><SiteHeader/></div>}
     <main className="app-main site-width">
       {banner}
       <TutorialNavigation/>
+      {persistenceIssue && <p className="storage-warning" role="alert">{persistenceIssue}</p>}
       {children}
     </main>
     <SiteFooter compact/>

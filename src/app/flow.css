@@ -447,3 +447,4 @@ html:has(.trail-explorer.maplibregl-pseudo-fullscreen) { overflow: hidden; }
 .reservation-review small { color: #725531; font-size: 12px; }
 .reservation-review-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
 @media (max-width: 680px) { .reservation-review li { display: grid; } .reservation-review-actions { justify-content: flex-start; } }
+.storage-warning { margin: 0 0 14px; padding: 10px 12px; border: 1px solid #dca45e; border-radius: 10px; color: #6f4511; background: #fff5e3; font-size: 13px; }
