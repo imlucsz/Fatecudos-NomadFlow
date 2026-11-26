@@ -59,6 +59,15 @@ function EditStop({trip,index,onClose}: {trip:Trip;index:number;onClose:() => vo
   const {result,error} = editStop(trip,index,{stay,leg,start,end});
   const delta = result ? costs(result).known-costs(trip).known : 0;
   const updatedBefore = result?.stops[index-1], updatedNext = result?.stops[index+1];
+  const affectedStops = result ? result.stops.flatMap((updated,stopIndex) => {
+    const original = trip.stops[stopIndex];
+    if (!original || (original.start === updated.start && original.end === updated.end && original.stay.id === updated.stay.id)) return [];
+    return [{original,updated}];
+  }).slice(0,5) : [];
+  const moreAffected = result ? Math.max(0,result.stops.filter((updated,stopIndex) => {
+    const original = trip.stops[stopIndex];
+    return original && (original.start !== updated.start || original.end !== updated.end || original.stay.id !== updated.stay.id);
+  }).length-affectedStops.length) : 0;
   return <Modal title={"Editar "+stop.city.name} onClose={onClose}>
     <form className="stack" onSubmit={(event)=>{
       event.preventDefault();
@@ -74,12 +83,13 @@ function EditStop({trip,index,onClose}: {trip:Trip;index:number;onClose:() => vo
       {legChoice==="manual" && <div className="form-grid"><label>Modalidade<select value={manualMode} onChange={(event)=>setManualMode(event.target.value as Leg["mode"])}><option>Avião</option><option>Ônibus</option></select></label><label>Valor por pessoa em BRL<input type="number" min="0" step=".01" value={manualFare} onChange={(event)=>setManualFare(event.target.value)} placeholder="Em aberto"/></label><label>Duração em horas<input type="number" min="1" max="72" value={manualHours} onChange={(event)=>setManualHours(event.target.value)} placeholder="Em aberto"/></label></div>}
       {error && <p className="form-error">{error}</p>}
       {conflict && <p className="form-error">A viagem mudou em outra aba. Feche e reabra a edição para revisar a versão atual.</p>}
-      {result && <div className="edit-preview"><strong>{delta===0 ? "O subtotal conhecido permanece igual" : (delta<0 ? "Economia de " : "Acréscimo de ")+money(Math.abs(delta),plan.currency)}</strong><span>Novo subtotal {money(costs(result).known,plan.currency)} · {costs(result).pending} itens sem valor</span>
+      {result && <div className="edit-preview" aria-live="polite"><strong>{delta===0 ? "O subtotal conhecido permanece igual" : (delta<0 ? "Economia de " : "Acréscimo de ")+money(Math.abs(delta),plan.currency)}</strong><span>Subtotal atual {money(costs(trip).known,plan.currency)} → novo subtotal {money(costs(result).known,plan.currency)} · {costs(result).pending} itens sem valor</span>
+        {!!affectedStops.length && <div className="replan-diff"><strong>Paradas afetadas</strong>{affectedStops.map(({original,updated})=><div className="replan-diff-row" key={updated.id}><span>{updated.city.name}</span><small>{shortDate(original.start)}–{shortDate(original.end)} → {shortDate(updated.start)}–{shortDate(updated.end)}</small></div>)}{moreAffected>0 && <small>+ {moreAffected} outras paradas afetadas</small>}</div>}
         {previous && updatedBefore && <span>{previous.city.name} → {stop.city.name} · partida em {shortDate(updatedBefore.end,true)}</span>}
         {next && updatedNext && <span>{stop.city.name} → {next.city.name} · partida em {shortDate(end,true)} · check-in em {shortDate(updatedNext.start,true)}</span>}
-        <small className="quiet">Os eventos afetados são recalculados. Reservas já registradas preservam o histórico e entram em revisão.</small>
+        <small className="quiet">Nada é salvo até você confirmar. Ao cancelar, o plano original permanece intacto. Reservas já registradas preservam o histórico e entram em revisão.</small>
       </div>}
-      <button className="button" type="submit" disabled={!result || conflict}>Salvar alteração <Check size={17}/></button>
+      <div className="edit-actions"><button className="button button-outline" type="button" onClick={onClose}>Cancelar sem alterar</button><button className="button" type="submit" disabled={!result || conflict}>Confirmar replanejamento <Check size={17}/></button></div>
     </form>
   </Modal>;
 }

@@ -17,7 +17,7 @@ const icons = {economic:Coins,balanced:Scale,comfort:Sparkles,work:Laptop};
 export function VariantOptions({variants,choice,onSelect,compact=false}: {
   variants:Variant[];choice:Strategy;onSelect:(choice:Strategy)=>void;compact?:boolean;
 }) {
-  return <div className="variant-grid" role="group" aria-label="Pacotes da viagem">
+  return <div className="variant-grid" role="group" aria-label="Propostas da viagem">
     {variants.map((item)=>{
       const data=costs(item), Icon=icons[item.id];
       const countryCount=new Set(item.stops.map((stop)=>stop.city.country)).size;

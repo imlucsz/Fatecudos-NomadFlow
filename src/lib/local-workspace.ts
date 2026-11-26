@@ -55,17 +55,20 @@ function persist(next:State) {
 async function restore() {
   if (restoring) return;
   restoring=true;
-  const initial=snapshot();
-  if (initial!==empty) persist(initial);
-  else {
-    const saved=await readWorkspace<State>().catch(()=>undefined);
-    if (saved && snapshot()===initial) {
-      state=saved;
-      try { localStorage.setItem(key,JSON.stringify(saved)); } catch {}
+  try {
+    const initial=snapshot();
+    if (initial!==empty) persist(initial);
+    else {
+      const saved=await readWorkspace<State>().catch(()=>undefined);
+      if (saved && snapshot()===initial) {
+        state=saved;
+        try { localStorage.setItem(key,JSON.stringify(saved)); } catch {}
+      }
     }
+  } finally {
+    restored=true;
+    for (const notify of listeners) notify();
   }
-  restored=true;
-  for (const notify of listeners) notify();
 }
 
 export const waitForWorkspaceSave=()=>persistence;

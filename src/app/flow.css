@@ -433,3 +433,8 @@ html:has(.trail-explorer.maplibregl-pseudo-fullscreen) { overflow: hidden; }
   .trail-place-list { max-height: 8rem; }
   .globe-runtime .maplibregl-ctrl-attrib { font-size: 8px; }
 }
+.replan-diff { display: grid; gap: 5px; margin-block: 5px; padding-top: 7px; border-top: 1px solid var(--line); }
+.replan-diff-row { display: grid; grid-template-columns: minmax(0,.8fr) minmax(0,1.2fr); gap: 8px; align-items: baseline; }
+.replan-diff-row small { color: var(--muted); font-variant-numeric: tabular-nums; }
+.edit-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 9px; }
+.edit-actions .button { max-width: 100%; }

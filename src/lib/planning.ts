@@ -45,6 +45,13 @@ export function localDay(zone: string, now = new Date()) {
 }
 export const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 export const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0,10);
+export function validDateKey(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const [,year,month,day] = match.map(Number);
+  const date = new Date(Date.UTC(year,month-1,day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month-1 && date.getUTCDate() === day;
+}
 export function addMonths(date: string, n: number) {
   const [year, month, day] = date.split("-").map(Number);
   const target = new Date(Date.UTC(year, month - 1 + n, 1));
@@ -180,6 +187,8 @@ export function costs(variant: Variant) {
 
 export function validatePlan(plan: Plan) {
   if (!plan.origin.name || !plan.end.name || !plan.start || !plan.endDate) return "Preencha a origem, o destino e as datas.";
+  if (!validDateKey(plan.start) || !validDateKey(plan.endDate)) return "Informe datas válidas no calendário.";
+  if (daysBetween(plan.start,plan.endDate) < 1) return "A data de término deve ser depois da saída.";
   if (!plan.loop && plan.origin.id === plan.end.id) return "Escolha um destino diferente da origem ou ative o retorno.";
   if (plan.loop && plan.via.length === 0) return "Adicione pelo menos uma parada para montar um circuito.";
   if (plan.endDate > addMonths(plan.start,24)) return "O período máximo é de 24 meses.";
@@ -196,7 +205,7 @@ export function generate(plan: Plan): Variant[] {
   const arrival=arrivesAtEnd(plan);
   const overnight=arrival ? route.slice(0,-1) : route;
   const duration = daysBetween(plan.start,plan.endDate);
-  const variantIds = ["economic","balanced","comfort"] as const;
+  const variantIds = ["economic","balanced","comfort","work"] as const;
   const southDemo=plan.preset === "south" && duration === 365 && plan.travelers === 1 && plan.currency === "BRL" && plan.transport === "qualquer" && plan.extras.length === extras.length && plan.stays.includes("Hostel") && plan.via.length === south.length && south.every((place) => plan.via.some((item) => item.id === place.id));
   const variants = variantIds.flatMap((id): Variant[] => {
     const legs = route.slice(1).map((to,index) => {
@@ -213,7 +222,7 @@ export function generate(plan: Plan): Variant[] {
       const pace = plan.pace === "tranquilo" ? 2 : plan.pace === "intenso" ? 6 : 4;
       if (plan.loop && index === route.length-1) return .2;
       if (id === "economic" && place.night > 0 && place.night <= 90) return pace + 2;
-      if (id === "balanced" && plan.internet && contextCities.has(place.id) && !southDemo) return pace+1;
+      if ((id === "balanced" || id === "work") && plan.internet && contextCities.has(place.id) && !southDemo) return pace+(id === "work" ? 2 : 1);
       return pace;
     });
     let elapsed = 0, weighted = 0;
@@ -223,7 +232,7 @@ export function generate(plan: Plan): Variant[] {
       const priced = [...allowed].sort((a,b)=>nightlyForGroup(a,plan.travelers)-nightlyForGroup(b,plan.travelers));
       const lowest=priced[0];
       const middle=priced.find((item)=>item.id==="season" && item!==lowest) ?? priced.find((item)=>item!==lowest && item.id!=="premium") ?? lowest;
-      const stay=id==="economic" ? lowest : id==="balanced" ? (southDemo ? allowed.find((item)=>item.id==="hostel")! : middle)
+      const stay=id==="economic" ? lowest : id==="balanced" || id==="work" ? (southDemo ? allowed.find((item)=>item.id==="hostel")! : middle)
         : allowed.find((item)=>item.id==="premium") ?? priced.at(-1)!;
       if (arrival && index===route.length-1) return {id:"stop-"+index,city:place,start:plan.endDate,end:addDays(plan.endDate,1),stay,done:false};
       const nights = 1 + Math.round((weighted+weights[index])*scale)-Math.round(weighted*scale);
@@ -254,9 +263,11 @@ export type StopEdit = { stay: Stay; leg?: Leg; start: string; end: string };
 
 export function editStop(trip: Trip, index: number, change: StopEdit): { result?: Trip; error?: string } {
   const current = trip.stops[index];
+  if (!current) return {error:"Parada não encontrada nesta viagem."};
   const previous = trip.stops[index-1];
   const inbound = change.leg ?? trip.legs[index-1];
-  if (!change.start || !change.end || daysBetween(change.start,change.end) < 1) return {error:"A saída deve acontecer depois da chegada."};
+  if (!change.start || !change.end || !validDateKey(change.start) || !validDateKey(change.end)) return {error:"Informe datas válidas no calendário."};
+  if (daysBetween(change.start,change.end) < 1) return {error:"A saída deve acontecer depois da chegada."};
   const previousEnd = previous && addDays(change.start,-transitDays(inbound));
   if (previous && previousEnd && daysBetween(previous.start,previousEnd)<1) return {error:"Mantenha ao menos uma noite na parada anterior e tempo para o deslocamento."};
   const shift = daysBetween(current.end,change.end);
@@ -277,7 +288,7 @@ export function editStop(trip: Trip, index: number, change: StopEdit): { result?
 }
 
 export const evidenceLabels: Record<Evidence,string> = {
-  ready:"Disponível para consulta",future:"Venda ainda fechada",review:"Rechecagem pendente",
+  ready:"Disponível para consulta",future:"Venda ainda fechada",review:"Verificação pendente",
   missing:"Sem oferta encontrada",expired:"Cotação expirada",error:"Fonte indisponível",
 };
 

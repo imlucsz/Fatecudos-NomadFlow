@@ -1,0 +1,110 @@
+[
+  {
+    "viewport": "desktop",
+    "route": "/",
+    "name": "home",
+    "status": 200,
+    "title": "NomadFlow — Planeje sua próxima viagem",
+    "text": "NomadFlow\nInício\nSobre\nComo funciona\nContato\nEntrar\nCriar conta\n✦\nUm roteiro feito para você.\nQuem tem boca vai a Roma.\nQuem tem Nomadflow vai muito além.\n\nseu guia de viagens\n\nPlanejar viagem\nRoteiros personalizados\n\nSua viagem em minutos,\nno seu ritmo.\n\nDa primeira parada à próxima.\nPlanejar roteiro\nPlaneje uma viagem romântica de 5 dias para Roma\n✦ Criar uma viagem\n✦ Inspire meu próximo destino\n✦ Planejar uma road trip\n✦ Planejar uma escapada\nEncontre a direção certa\npara a sua próxima viagem\n\nExplore roteiros prontos, compare as possibilidades e descubra por onde começar. Leve seu trabalho junto e faça o caminho no seu ritmo.\n\nAmã\nProvença\nWadi Rum\nToscana\nRoma\nPela estrada da Jordânia\nUS$ 4.272,19\n18 dias\n3 cidades\nRota modelo\n\nDas colunas antigas de Amã ao deserto de Wadi Rum.\n\nEuropa em família\nUS$ 4.272,19\n18 dias\n4 cidades\nRota modelo\n\nDezoito noites entre cidades históricas do Mediterrâneo.\n\nExplorar\nLua de mel na Jordânia\nUS$ 4.272,19\n18 dias\n3 cidades\nRota modelo\n\nUm roteiro a dois por Amã, Petra e Wadi Rum.\n\nPara quem explora\no mundo inteiro\n\nVeja como o NomadFlow ajuda a organizar diferentes estilos de viagem, de férias em família a meses trabalhando na estrada.\n\nMari",
+    "errors": []
+  },
+  {
+    "viewport": "desktop",
+    "route": "/explorar",
+    "name": "explorar",
+    "status": 200,
+    "title": "Explorar rotas | NomadFlow",
+    "text": "NomadFlow\nPlanejar\nMinhas viagens\nExplorar\nEntrar\nCriar conta\nEncontre seu próximo roteiro.\n\nEscolha um roteiro pronto e adapte as paradas, as datas e o orçamento.\n\nMontar minha rota\nTodos\nAmérica do Sul\nAmérica do Norte\nEuropa\nÁsia\nÁfrica\nOceania\n\n9 roteiros\n\nTodas as rotas\nRoteiros prontos\nDa comunidade\nQualquer duração\nAté 30 dias\n1 ano ou mais\nEm destaque\nMais curtidas\nMais usadas\nMenor custo estimado\nRoteiro pronto\nPela estrada da Jordânia\n\nDas colunas antigas de Amã ao deserto de Wadi Rum.\n\n 18 dias\n 4 paradas\nUS$ 4.272 estimados\n0\nRoteiro pronto\nEuropa em família\n\nDezoito noites entre cidades históricas do Mediterrâneo.\n\n 18 dias\n 4 paradas\nUS$ 4.272 estimados\n0\nRoteiro pronto\nLua de mel na Jordânia\n\nUm roteiro a dois por Amã, Petra e Wadi Rum.\n\n 18 dias\n 3 paradas\nUS$ 4.272 estimados\n0\nRoteiro pronto\nVolta pela América do Sul\n\nDoze países em um circuito de um ano com saída de São Paulo.\n\n 1 ano\n 13 paradas\nR$ 88.000 estimados\n0\nRoteiro pronto\nDe São Paulo a Bangkok\n\nUma rota de longa duração pela Europa, Oriente Médio e Ásia.\n\n 2 anos\n 12 paradas\nEstimativa em aberto\n0\nRoteiro pronto\nDe Nova York a Montréal\n\nPasse por Nova York e Toronto antes de conhecer a parte francófona",
+    "errors": []
+  },
+  {
+    "viewport": "desktop",
+    "route": "/planejar",
+    "name": "planejar",
+    "status": 200,
+    "title": "Planejar | NomadFlow",
+    "text": "NomadFlow\nPlanejar\nMinhas viagens\nExplorar\nEntrar\nCriar conta\nConta NomadFlow\nEntre para planejar sua viagem.\n\nEntre na sua conta para gerar e salvar propostas personalizadas.\n\nEntrar para continuar\nCriar perfil\nExplorar rotas de exemplo\nCentral de ajuda\nAcessar perfil\nPlanejar\nMinhas viagens\nExplorar\nNomadFlow\n© 2026 NomadFlow · Demonstração\nSobre\nProduto\nPlanejar\nDestinos",
+    "errors": []
+  },
+  {
+    "viewport": "desktop",
+    "route": "/comparar",
+    "name": "comparar",
+    "status": 200,
+    "title": "Comparar propostas | NomadFlow",
+    "text": "NomadFlow\nPlanejar\nMinhas viagens\nExplorar\nEntrar\nCriar conta\nConta NomadFlow\nEntre para planejar sua viagem.\n\nEntre na sua conta para gerar e salvar propostas personalizadas.\n\nEntrar para continuar\nCriar perfil\nExplorar rotas de exemplo\nCentral de ajuda\nAcessar perfil\nPlanejar\nMinhas viagens\nExplorar\nNomadFlow\n© 2026 NomadFlow · Demonstração\nSobre\nProduto\nPlanejar\nDestinos",
+    "errors": []
+  },
+  {
+    "viewport": "desktop",
+    "route": "/viagens",
+    "name": "viagens",
+    "status": 200,
+    "title": "Minhas viagens | NomadFlow",
+    "text": "NomadFlow\nPlanejar\nMinhas viagens\nExplorar\nEntrar\nCriar conta\nConta NomadFlow\nEntre para ver suas viagens.\n\nAcesse seu perfil para ver os roteiros salvos e acompanhar suas paradas.\n\nEntrar para continuar\nCriar perfil\nExplorar rotas de exemplo\nCentral de ajuda\nAcessar perfil\nPlanejar\nMinhas viagens\nExplorar\nNomadFlow\n© 2026 NomadFlow · Demonstração\nSobre\nProduto\nPlanejar\nDestinos",
+    "errors": []
+  },
+  {
+    "viewport": "desktop",
+    "route": "/conta",
+    "name": "conta",
+    "status": 200,
+    "title": "Conta e perfil | NomadFlow",
+    "text": "NomadFlow\nPlanejar\nMinhas viagens\nExplorar\nEntrar\nCriar conta\nBem-vindo de volta.\n\nEntre para continuar de onde parou.\n\nE-mail\nSenha\nEntrar\n\nPrimeira vez aqui?\nCriar perfil local\n\nSeu perfil e suas viagens ficam neste navegador.\n\nO mundo é seu próximo endereço.\n\nCentral de ajuda\nAcessar perfil\nPlanejar\nMinhas viagens\nExplorar\nNomadFlow\n© 2026 NomadFlow · Demonstração\nSobre\nProduto\nPlanejar\nDestinos",
+    "errors": []
+  },
+  {
+    "viewport": "mobile",
+    "route": "/",
+    "name": "home",
+    "status": 200,
+    "title": "NomadFlow — Planeje sua próxima viagem",
+    "text": "NomadFlow\nEntrar\nCriar conta\n✦\nUm roteiro feito para você.\nQuem tem boca vai a Roma.\nQuem tem Nomadflow vai muito a\n\nseu guia de viagens\n\nPlanejar viagem\nPlaneje uma viagem romântica de 5 dias para Roma\n✦ Criar uma viagem\n✦ Inspire meu próximo destino\n✦ Planejar uma road trip\n✦ Planejar uma escapada\nEncontre a direção certa\npara a sua próxima viagem\n\nExplore roteiros prontos, compare as possibilidades e descubra por onde começar. Leve seu trabalho junto e faça o caminho no seu ritmo.\n\nAmã\nProvença\nWadi Rum\nToscana\nRoma\nPela estrada da Jordânia\nUS$ 4.272,19\n18 dias\n3 cidades\nRota modelo\n\nDas colunas antigas de Amã ao deserto de Wadi Rum.\n\nEuropa em família\nUS$ 4.272,19\n18 dias\n4 cidades\nRota modelo\n\nDezoito noites entre cidades históricas do Mediterrâneo.\n\nExplorar\nLua de mel na Jordânia\nUS$ 4.272,19\n18 dias\n3 cidades\nRota modelo\n\nUm roteiro a dois por Amã, Petra e Wadi Rum.\n\nPara quem explora\no mundo inteiro\n\nVeja como o NomadFlow ajuda a organizar diferentes estilos de viagem, de férias em família a meses trabalhando na estrada.\n\nMarina R.\nViagem em família · Exemplo\n\nReuni trilhas, hospedagem e paradas em um roteiro só. Quando o tempo virou, ajustei as datas da viagem.\n\nYasmin L.",
+    "errors": []
+  },
+  {
+    "viewport": "mobile",
+    "route": "/explorar",
+    "name": "explorar",
+    "status": 200,
+    "title": "Explorar rotas | NomadFlow",
+    "text": "NomadFlow\nEntrar\nEncontre seu próximo roteiro.\n\nEscolha um roteiro pronto e adapte as paradas, as datas e o orçamento.\n\nMontar minha rota\nTodos\nAmérica do Sul\nAmérica do Norte\nEuropa\nÁsia\nÁfrica\nOceania\n\n9 roteiros\n\nTodas as rotas\nRoteiros prontos\nDa comunidade\nQualquer duração\nAté 30 dias\n1 ano ou mais\nEm destaque\nMais curtidas\nMais usadas\nMenor custo estimado\nRoteiro pronto\nPela estrada da Jordânia\n\nDas colunas antigas de Amã ao deserto de Wadi Rum.\n\n 18 dias\n 4 paradas\nUS$ 4.272 estimados\n0\nRoteiro pronto\nEuropa em família\n\nDezoito noites entre cidades históricas do Mediterrâneo.\n\n 18 dias\n 4 paradas\nUS$ 4.272 estimados\n0\nRoteiro pronto\nLua de mel na Jordânia\n\nUm roteiro a dois por Amã, Petra e Wadi Rum.\n\n 18 dias\n 3 paradas\nUS$ 4.272 estimados\n0\nRoteiro pronto\nVolta pela América do Sul\n\nDoze países em um circuito de um ano com saída de São Paulo.\n\n 1 ano\n 13 paradas\nR$ 88.000 estimados\n0\nRoteiro pronto\nDe São Paulo a Bangkok\n\nUma rota de longa duração pela Europa, Oriente Médio e Ásia.\n\n 2 anos\n 12 paradas\nEstimativa em aberto\n0\nRoteiro pronto\nDe Nova York a Montréal\n\nPasse por Nova York e Toronto antes de conhecer a parte francófona do Canadá.\n\n 21 dias\n 3 paradas\nEstimativa e",
+    "errors": []
+  },
+  {
+    "viewport": "mobile",
+    "route": "/planejar",
+    "name": "planejar",
+    "status": 200,
+    "title": "Planejar | NomadFlow",
+    "text": "NomadFlow\nEntrar\nCriar conta\nConta NomadFlow\nEntre para planejar sua viagem.\n\nEntre na sua conta para gerar e salvar propostas personalizadas.\n\nEntrar para continuar\nCriar perfil\nExplorar rotas de exemplo\nCentral de ajuda\nAcessar perfil\nPlanejar\nMinhas viagens\nExplorar\nNomadFlow\n© 2026 NomadFlow · Demonstração\nSobre\nProduto\nPlanejar\nDestinos",
+    "errors": []
+  },
+  {
+    "viewport": "mobile",
+    "route": "/comparar",
+    "name": "comparar",
+    "status": 200,
+    "title": "Comparar propostas | NomadFlow",
+    "text": "NomadFlow\nEntrar\nCriar conta\nConta NomadFlow\nEntre para planejar sua viagem.\n\nEntre na sua conta para gerar e salvar propostas personalizadas.\n\nEntrar para continuar\nCriar perfil\nExplorar rotas de exemplo\nCentral de ajuda\nAcessar perfil\nPlanejar\nMinhas viagens\nExplorar\nNomadFlow\n© 2026 NomadFlow · Demonstração\nSobre\nProduto\nPlanejar\nDestinos",
+    "errors": []
+  },
+  {
+    "viewport": "mobile",
+    "route": "/viagens",
+    "name": "viagens",
+    "status": 200,
+    "title": "Minhas viagens | NomadFlow",
+    "text": "NomadFlow\nEntrar\nCriar conta\nConta NomadFlow\nEntre para ver suas viagens.\n\nAcesse seu perfil para ver os roteiros salvos e acompanhar suas paradas.\n\nEntrar para continuar\nCriar perfil\nExplorar rotas de exemplo\nCentral de ajuda\nAcessar perfil\nPlanejar\nMinhas viagens\nExplorar\nNomadFlow\n© 2026 NomadFlow · Demonstração\nSobre\nProduto\nPlanejar\nDestinos",
+    "errors": []
+  },
+  {
+    "viewport": "mobile",
+    "route": "/conta",
+    "name": "conta",
+    "status": 200,
+    "title": "Conta e perfil | NomadFlow",
+    "text": "NomadFlow\nEntrar\nCriar conta\nBem-vindo de volta.\n\nEntre para continuar de onde parou.\n\nE-mail\nSenha\nEntrar\n\nPrimeira vez aqui?\nCriar perfil local\n\nSeu perfil e suas viagens ficam neste navegador.\n\nCentral de ajuda\nAcessar perfil\nPlanejar\nMinhas viagens\nExplorar\nNomadFlow\n© 2026 NomadFlow · Demonstração\nSobre\nProduto\nPlanejar\nDestinos",
+    "errors": []
+  }
+]
