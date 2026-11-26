@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { addDays, costs, daysBetween, editStop, generate, presetPlan, validDateKey, validatePlan, type Trip } from "./planning";
+import { addDays, archiveInvalidReservation, costs, daysBetween, editStop, generate, invalidReservations, presetPlan, queue, setReservation, validDateKey, validatePlan, type Trip } from "./planning";
 
 function demoPlan() {
   const plan = presetPlan("thailand","2027-01-10");
@@ -124,4 +124,20 @@ test("editStop explica que a chegada final não é uma hospedagem editável", ()
   const result = editStop(trip,trip.stops.length-1,{stay:final.stay,start:final.start,end:final.end});
   assert.match(result.error ?? "",/chegada final/i);
   assert.equal(result.result,undefined);
+});
+
+test("reservas invalidadas ficam visíveis para revisão e podem ser arquivadas", () => {
+  const trip = demoTrip();
+  const firstStay = queue(trip).find((item) => item.kind === "Hospedagem")!;
+  const confirmed = setReservation(trip,firstStay,{paid:123450});
+  assert.notEqual(confirmed,trip);
+  const first = confirmed.stops[0];
+  const {result} = editStop(confirmed,0,{stay:first.stay,start:first.start,end:addDays(first.end,7)});
+  assert.ok(result);
+  const invalid = invalidReservations(result);
+  assert.equal(invalid.length,1);
+  assert.equal(invalid[0].reservation.replaced?.day,firstStay.day);
+  const archived = archiveInvalidReservation(result,invalid[0].id,invalid[0].reservation.signature);
+  assert.equal(invalidReservations(archived).length,0);
+  assert.equal(archived.reservations[invalid[0].id].state,"invalidated");
 });

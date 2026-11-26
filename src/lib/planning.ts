@@ -21,7 +21,7 @@ export type Stay = { id: string; type: StayType; name: string; nightly: number |
 export type Stop = { id: string; city: City; start: string; end: string; stay: Stay; done: boolean };
 export type Leg = { id: string; from: string; to: string; mode: Mode; hours: number | null; price: number | null; status: Evidence; provider: string; url?: string };
 export type Variant = { id: Strategy; plan: Plan; stops: Stop[]; legs: Leg[]; calibration: number };
-export type Reservation = { state: "visited" | "registered"; date: string; paid?: number; signature: string; item: string; confirmedByTraveler?: boolean; googleCalendarLink?: string; googleCalendarTime?: string };
+export type Reservation = { state: "visited" | "registered" | "invalidated"; date: string; paid?: number; signature: string; item: string; confirmedByTraveler?: boolean; googleCalendarLink?: string; googleCalendarTime?: string; replaced?: { day: string; until?: string; kind: string; signature: string } };
 export type Trip = Variant & {
   tripId: string; title: string; revision: number; created: string;
   reservations: Record<string, Reservation>; reminders: Record<string, string>;
@@ -282,8 +282,17 @@ export function editStop(trip: Trip, index: number, change: StopEdit): { result?
   const result = {...trip,stops,legs,plan:{...trip.plan,start,endDate},revision:trip.revision+1};
   const oldQueue = queue(trip);
   const revisedQueue = queue(result);
+  const reservations={...trip.reservations};
+  for (const [id,reservation] of Object.entries(reservations)) {
+    if (reservation.state!=="registered" || reservation.replaced) continue;
+    const before=oldQueue.find((item)=>item.id===id);
+    const after=revisedQueue.find((item)=>item.id===id);
+    if (before && (!after || after.signature!==reservation.signature)) {
+      reservations[id]={...reservation,replaced:{day:before.day,until:before.until,kind:before.kind,signature:before.signature}};
+    }
+  }
   const reminders = Object.fromEntries(Object.entries(trip.reminders).filter(([id]) => revisedQueue.some((item) => item.id === id && item.signature === oldQueue.find((old) => old.id === id)?.signature)));
-  return {result:{...result,reminders}};
+  return {result:{...result,reservations,reminders}};
 }
 
 export const evidenceLabels: Record<Evidence,string> = {
@@ -353,6 +362,25 @@ export type QueueItem = {
 
 export function registeredReservation(item:QueueItem) {
   return item.reservation?.state==="registered" && item.reservation.signature===item.signature ? item.reservation : undefined;
+}
+
+export type InvalidReservation = { id: string; reservation: Reservation; current?: QueueItem };
+export function invalidReservations(trip: Trip): InvalidReservation[] {
+  const items=queue(trip);
+  return Object.entries(trip.reservations).flatMap(([id,reservation]) => {
+    if (reservation.state!=="registered") return [];
+    const current=items.find((item)=>item.id===id);
+    if (current?.signature===reservation.signature) return [];
+    return [{id,reservation,current}];
+  }).sort((a,b)=>a.reservation.date.localeCompare(b.reservation.date));
+}
+
+export function archiveInvalidReservation(trip: Trip, id: string, signature: string) {
+  const reservation=trip.reservations[id];
+  if (!reservation || reservation.state!=="registered" || reservation.signature!==signature) return trip;
+  const current=queue(trip).find((item)=>item.id===id);
+  if (current?.signature===signature) return trip;
+  return {...trip,revision:trip.revision+1,reservations:{...trip.reservations,[id]:{...reservation,state:"invalidated" as const}}};
 }
 
 export function reservationLabel(item:QueueItem) {
