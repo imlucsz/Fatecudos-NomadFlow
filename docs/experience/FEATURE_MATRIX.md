@@ -2,8 +2,8 @@
 
 | Funcionalidade | Local | Estado baseline | Evidência | Prioridade |
 |---|---|---|---|---|
-| Landing pública e composer | `src/components/landing.tsx` | funcional | `desktop-home.png` | P1 |
-| Catálogo Explorar e modelos | `src/components/catalog.tsx` | funcional | `desktop-explorar.png` | P1 |
+| Landing pública e composer | `src/components/landing.tsx` | funcional | `desktop-home.webp` | P1 |
+| Catálogo Explorar e modelos | `src/components/catalog.tsx` | funcional | `desktop-explorar.webp` | P1 |
 | Login/perfil local | `src/lib/local-workspace.ts` | funcional; local explícito | fluxo 01–02 | P0 |
 | Planejador por texto/voz e edição manual | `src/components/planner.tsx` | funcional | fluxo 03–04 | P0 |
 | Geração determinística de propostas | `src/lib/planning.ts` | funcional; sem testes antes | testes novos | P0 |

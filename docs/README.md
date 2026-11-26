@@ -25,7 +25,7 @@ Documentos em `experience/` sobre universo, mascote, motion, onboarding e refer�
 - `experience/baseline/` — capturas do estado inicial da auditoria.
 - `experience/current/` — capturas do estado mais recente documentado.
 
-Artefatos transitórios de captura, arquivos com nomes quebrados e duplicatas compactadas foram removidos. As imagens restantes são evidências de comparação e não devem ser tratadas como especificação final de design.
+Artefatos transitórios de captura, arquivos com nomes quebrados e duplicatas compactadas foram removidos. As imagens restantes são evidências de comparação em WebP de alta qualidade e não devem ser tratadas como especificação final de design.
 
 ## Pitch audiovisual
 
