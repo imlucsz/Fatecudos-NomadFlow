@@ -60,7 +60,7 @@ src/lib/          motor de planejamento, persistência, parser e testes
 public/           imagens e vídeo usados pela aplicação
 e2e/              smoke tests Playwright
 docs/             documentação de produto, engenharia e evidências
-video/            material isolado do pitch audiovisual (não faz parte do app)
+video/            material local do pitch, intencionalmente fora do Git neste workspace
 ```
 
 A pasta legada `landing/` foi removida por ser um protótipo independente substituído pela home real em `src/app/page.tsx`/`src/components/landing.tsx`.

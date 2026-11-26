@@ -29,4 +29,4 @@ Artefatos transitórios de captura, arquivos com nomes quebrados e duplicatas co
 
 ## Pitch audiovisual
 
-`NOMADFLOW_VIDEO_PROMPT_*.md` pertencem ao escopo isolado do vídeo. Siga também `video/pitch/AGENTS.md` quando esse material existir. Não misture alterações do pitch com engenharia do aplicativo.
+`NOMADFLOW_VIDEO_PROMPT_*.md`, `.agents/`, `.codex/` e `video/` pertencem ao escopo local isolado do vídeo e são intencionalmente ignorados pelo Git neste workspace. Não misture alterações do pitch com engenharia do aplicativo.
