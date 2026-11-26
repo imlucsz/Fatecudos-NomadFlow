@@ -22,7 +22,16 @@ function readNumber(value: string) {
   if (/^\d/.test(value)) {
     const multiple = value.endsWith(" mil") ? 1000 : 1;
     const text = value.replace(/\s+mil$/,"");
-    const decimal = text.includes(",") ? text.replaceAll(".","").replace(",",".") : text.replace(/\.(?=\d{3}(?:\.|$))/g,"");
+    const groupedComma=/^\d{1,3}(?:,\d{3})+$/.test(text);
+    const groupedDot=/^\d{1,3}(?:\.\d{3})+$/.test(text);
+    let decimal=text;
+    if (text.includes(",") && text.includes(".")) {
+      const decimalSeparator=text.lastIndexOf(",")>text.lastIndexOf(".") ? "," : ".";
+      const groupSeparator=decimalSeparator==="," ? "." : ",";
+      decimal=text.replaceAll(groupSeparator,"").replace(decimalSeparator,".");
+    } else if (groupedComma) decimal=text.replaceAll(",","");
+    else if (groupedDot) decimal=text.replaceAll(".","");
+    else decimal=text.replace(",",".");
     return Number(decimal)*multiple;
   }
   let total=0, section=0;

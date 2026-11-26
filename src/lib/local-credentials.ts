@@ -13,7 +13,7 @@ export async function makeLocalPassword(value: string): Promise<LocalPassword> {
 }
 
 export async function matchesLocalPassword(value: string, password: LocalPassword | undefined) {
-  if (!password) return true;
+  if (!password) return false;
   if (!value || value.length>passwordLength.max) return false;
   return await passwordHash(value,new Uint8Array(password.salt))===password.hash;
 }

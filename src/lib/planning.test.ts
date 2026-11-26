@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { addDays, archiveInvalidReservation, costs, daysBetween, editStop, generate, invalidReservations, presetPlan, queue, setReservation, validDateKey, validatePlan, type Trip } from "./planning";
+import { addDays, archiveInvalidReservation, costs, daysBetween, editStop, generate, ics, invalidReservations, presetPlan, queue, setReservation, validDateKey, validatePlan, type Trip } from "./planning";
 
 function demoPlan() {
   const plan = presetPlan("thailand","2027-01-10");
@@ -140,4 +140,16 @@ test("reservas invalidadas ficam visíveis para revisão e podem ser arquivadas"
   const archived = archiveInvalidReservation(result,invalid[0].id,invalid[0].reservation.signature);
   assert.equal(invalidReservations(archived).length,0);
   assert.equal(archived.reservations[invalid[0].id].state,"invalidated");
+});
+
+
+test("ICS emite DTEND e mantém linhas dentro do limite de 75 octetos", () => {
+  const output=ics(demoTrip());
+  const lines=output.split("\r\n").filter(Boolean);
+  const starts=lines.filter((line)=>line.startsWith("DTSTART"));
+  const ends=lines.filter((line)=>line.startsWith("DTEND"));
+  assert.ok(starts.length>0);
+  assert.equal(ends.length,starts.length);
+  const encoder=new TextEncoder();
+  for (const line of lines) assert.ok(encoder.encode(line).length<=75,line.slice(0,90));
 });

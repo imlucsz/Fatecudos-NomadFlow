@@ -505,8 +505,10 @@ export function ics(trip: Trip) {
   const timed = new Set(queue(trip).filter((item)=>item.time).map((item)=>item.id));
   for (const event of calendar(trip)) {
     const allDay=event.bookingId && !timed.has(event.bookingId);
+    const end=allDay ? undefined : new Date(+event.instant+(event.type==="Hospedagem" ? 60 : event.type==="Viagem" ? 30 : 15)*60000);
     lines.push("BEGIN:VEVENT","UID:"+trip.tripId+"-"+event.id+"@nomadflow","SEQUENCE:"+trip.revision,"DTSTAMP:"+stamp(new Date()),
       allDay ? "DTSTART;VALUE=DATE:"+event.day.replaceAll("-","") : "DTSTART:"+stamp(event.instant),
+      allDay ? "DTEND;VALUE=DATE:"+addDays(event.day,1).replaceAll("-","") : "DTEND:"+stamp(end!),
       "SUMMARY:"+escape(event.title),"DESCRIPTION:"+escape((allDay ? "Horário a confirmar · " : "")+event.tz+" · NomadFlow"));
     if (event.alarm) lines.push("BEGIN:VALARM","ACTION:DISPLAY","TRIGGER;VALUE=DATE-TIME:"+stamp(event.alarm),"DESCRIPTION:Lembrete de partida","END:VALARM");
     lines.push("END:VEVENT");
@@ -516,10 +518,16 @@ export function ics(trip: Trip) {
   return lines.map((line) => {
     const parts: string[] = [];
     let part = "";
+    let capacity = 75;
     for (const char of line) {
-      if (encoder.encode(part+char).length > 75) { parts.push(part); part = " "; }
+      if (encoder.encode(part+char).length > capacity) {
+        parts.push(part);
+        part = "";
+        capacity = 74;
+      }
       part += char;
     }
-    return [...parts,part].join("\r\n");
+    parts.push(part);
+    return parts.map((part,index)=>(index ? " " : "")+part).join("\r\n");
   }).join("\r\n") + "\r\n";
 }
